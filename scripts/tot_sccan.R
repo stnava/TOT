@@ -23,7 +23,7 @@ confounds<-cbind( confounds, ff$MatAgeAtDel*(-1) )
 confounds<-cbind( confounds, ff$EDU_MOM_HS_Status )
 confounds<-cbind( confounds, ff$GestAge )
 ######### the study #########
-np<-1000
+np<-5000
 # home vars 
 demog<-as.matrix(  ff[,c(11,12)] )
 brain<-as.matrix( cbind( ff[ ,c(3,6,7,8,4)]  , ff[ ,13:ncol(ff) ] ) )

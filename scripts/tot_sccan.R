@@ -23,7 +23,7 @@ ff$HOMETotalScore[ is.na( ff$HOMETotalScore ) ]<-mean( ff$HOMETotalScore,na.rm =
 ff$ADJ_HOMETotalScore[ is.na( ff$ADJ_HOMETotalScore ) ]<-mean( ff$ADJ_HOMETotalScore,na.rm = T ) 
 ######### setup study data #########
 if ( !exists("np") ) np<-5000
-whbrain<-c(13:ncol(ff))
+whbrain<-c(17,19:ncol(ff))
 if ( !exists("studyhome") ) studyhome<-FALSE
 if ( studyhome ) {
   # home variable study
@@ -34,14 +34,14 @@ if ( studyhome ) {
 } else {
  wh<-c( 3, 4, 6, 8 )
  demog<-as.matrix(  ff[,wh] )  # just adj_home
- brain<-as.matrix( cbind(  ff[ ,whbrain] ) )
+ brain<-as.matrix( cbind(  bvol, ff[ ,whbrain] ) )
  nv<-3
 }
 colnames( demog )<-colnames( ff )[wh]
 brain<-impute(brain)
 ######### setup analysis #########
 sccan<-sparseDecom2( inmatrix=list( demog , brain ), inmask = c( NA , NA ) ,
-  sparseness=c( 0.25 ,  0.1 ), nvecs=nv, its=20, smooth=0, perms=np, cthresh = c(0, 0), robust=1 )
+  sparseness=c( 0.5 ,  0.1 ), nvecs=nv, its=20, smooth=0, perms=np, cthresh = c(0, 0), robust=0 )
 for ( ind in 1:nv ) {
   print(paste("Sccanvec",ind,"pvalue",sccan$ccasummary[1,ind+1],"corr",sccan$ccasummary[2,ind+1]))
   print( paste( colnames(demog)[ abs(sccan$eig1[,ind]) > eps ] ) )

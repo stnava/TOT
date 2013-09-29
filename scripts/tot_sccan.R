@@ -4,7 +4,7 @@ library( foreign )
 library( psych )
 library( ANTsR )
 library( e1071 )
-ctl<-lmrob.control( "KS2011", max.it = 1000 )
+eps<-1.e-6
 labelnames<-read.csv('data/labels_surface_DKT31_fullnames.csv')
 ff<-read.csv('data/TOT_Study_Preliminary_Image_Variables.csv')
 demog<-data.frame( read.spss('data/TOT_Demographics_MRI_Analyses July2013.sav') )
@@ -14,7 +14,9 @@ ffmerge<-merge( demog, tissue )  #
 inds<-c(1:nrow(ffmerge))
 bvol<-apply( ffmerge[,13:15], FUN = sum, MARGIN = 1 )
 ff<-ffmerge
+ff$ADJ_HOMETotalScore<-ff$ADJ_HOMETotalScore*(-1)
 ####### some imputation ##### 
+ff$HC[ is.na( ff$HC ) ]<-mean( ff$HC,na.rm = T ) 
 ff$BMIprepreg[ is.na( ff$BMIprepreg ) ]<-mean( ff$BMIprepreg,na.rm = T ) 
 ff$BMIdel[ is.na( ff$BMIdel ) ]<-mean( ff$BMIdel,na.rm = T ) 
 ff$HOMETotalScore[ is.na( ff$HOMETotalScore ) ]<-mean( ff$HOMETotalScore,na.rm = T ) 
@@ -22,26 +24,24 @@ ff$ADJ_HOMETotalScore[ is.na( ff$ADJ_HOMETotalScore ) ]<-mean( ff$ADJ_HOMETotalS
 ######### setup study data #########
 if ( !exists("np") ) np<-5000
 whbrain<-c(13:ncol(ff))
-if ( !exists("studyhome") ) studyhome<-TRUE
+if ( !exists("studyhome") ) studyhome<-FALSE
 if ( studyhome ) {
   # home variable study
   wh<-c(11)
-  demog<-as.matrix(  ff[,wh]*(-1))  # just adj_home , negated 
-  brain<-as.matrix( cbind( ff[ ,c(3,4,8)]  , ff[ ,whbrain ] ) ) # with BMI
+  demog<-as.matrix(  ff[,wh] )  # just adj_home , negated 
+  brain<-as.matrix( ff[ ,c(3,4,6,8,whbrain)] ) # with BMI
+  nv<-1
 } else {
- wh<-c(3,4,8,11)
+ wh<-c( 3, 4, 6, 8 )
  demog<-as.matrix(  ff[,wh] )  # just adj_home
- brain<-as.matrix( cbind( bvol , ff[ ,whbrain] ) )
+ brain<-as.matrix( cbind(  ff[ ,whbrain] ) )
+ nv<-3
 }
 colnames( demog )<-colnames( ff )[wh]
 brain<-impute(brain)
 ######### setup analysis #########
-nv<-( ncol(demog) - 1 )
-if ( nv < 1 ) nv<-1
-nv<-2
 sccan<-sparseDecom2( inmatrix=list( demog , brain ), inmask = c( NA , NA ) ,
-  sparseness=c( -0.4 ,  0.1 ), nvecs=nv, its=30, smooth=0, perms=np, cthresh = c(0, 0), robust=1 )
-eps<-1.e-6
+  sparseness=c( 0.25 ,  0.1 ), nvecs=nv, its=20, smooth=0, perms=np, cthresh = c(0, 0), robust=1 )
 for ( ind in 1:nv ) {
   print(paste("Sccanvec",ind,"pvalue",sccan$ccasummary[1,ind+1],"corr",sccan$ccasummary[2,ind+1]))
   print( paste( colnames(demog)[ abs(sccan$eig1[,ind]) > eps ] ) )

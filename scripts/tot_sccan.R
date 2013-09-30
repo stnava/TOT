@@ -30,7 +30,7 @@ if ( studyhome ) {
   # home variable study
   wh<-c(18)
   demog<-as.matrix(  ff[,wh] )  # just adj_home , negated 
-  brain<-as.matrix( cbind( ff[ ,c(5, 8, 13 )] , brain ) ) # with BMI
+  brain<-as.matrix( cbind( ff[ ,c(5, 8, 10, 13 )] , brain ) ) # with BMI
   nv<-1
 } else {
  wh<-c( 5 , 8, 13, 18 )

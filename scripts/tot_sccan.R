@@ -35,7 +35,7 @@ if ( studyhome ) {
 } else {
  wh<-c( 5 , 8, 13, 18 )
  demog<-as.matrix(  ff[,wh] )  # just adj_home
- nv<-3
+ nv<-4
 }
 colnames( demog )<-colnames( ff )[wh]
 ######### setup analysis #########
@@ -53,4 +53,5 @@ for ( ind in 1:nv ) {
     if ( length( selector ) > 0 ) print(  paste( selector , wt2[j]/sum(wt2)  , sum(wt2[1:j])/sum(wt2) ) )else print( paste(  myanat[j] , wt2[j]/sum(wt2)   , sum(wt2[1:j])/sum(wt2) ) )
   }
 }
+print("Adjusted p-values") 
 print( p.adjust( sccan$ccasummary[1,2:(ncol(sccan$ccasummary)-1)] , method="BH" ) )

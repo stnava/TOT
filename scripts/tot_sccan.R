@@ -34,14 +34,15 @@ if ( studyhome ) {
 } else {
  wh<-c( 3, 4, 6, 8 )
  demog<-as.matrix(  ff[,wh] )  # just adj_home
- brain<-as.matrix( cbind(  bvol, ff[ ,whbrain] ) )
+ rbrain<-impute( ff[ ,whbrain] )
+ rbrain<-residuals( lm(   as.matrix(rbrain) ~ bvol  ) )
+ brain<-as.matrix( cbind(  bvol, rbrain ) )
  nv<-3
 }
 colnames( demog )<-colnames( ff )[wh]
-brain<-impute(brain)
 ######### setup analysis #########
 sccan<-sparseDecom2( inmatrix=list( demog , brain ), inmask = c( NA , NA ) ,
-  sparseness=c( 0.5 ,  0.1 ), nvecs=nv, its=20, smooth=0, perms=np, cthresh = c(0, 0), robust=0 )
+  sparseness=c( 0.25 ,  0.1 ), nvecs=nv, its=20, smooth=0, perms=np, cthresh = c(0, 0), robust=1 )
 for ( ind in 1:nv ) {
   print(paste("Sccanvec",ind,"pvalue",sccan$ccasummary[1,ind+1],"corr",sccan$ccasummary[2,ind+1]))
   print( paste( colnames(demog)[ abs(sccan$eig1[,ind]) > eps ] ) )

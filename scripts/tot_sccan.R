@@ -40,7 +40,7 @@ if ( studyhome ) {
 colnames( demog )<-colnames( ff )[wh]
 ######### setup analysis #########
 sccan<-sparseDecom2( inmatrix=list( demog , brain ), inmask = c( NA , NA ) ,
-  sparseness=c( 0.15 ,  0.05 ), nvecs=nv, its=15, smooth=0, perms=np, cthresh = c(0, 0), robust=1 )
+  sparseness=c( 0.25 ,  0.05 ), nvecs=nv, its=15, smooth=0, perms=np, cthresh = c(0, 0), robust=1 )
 for ( ind in 1:nv ) {
   print(paste("Sccanvec",ind,"pvalue",sccan$ccasummary[1,ind+1],"corr",sccan$ccasummary[2,ind+1]))
   print( paste( colnames(demog)[ abs(sccan$eig1[,ind]) > eps ] ) )

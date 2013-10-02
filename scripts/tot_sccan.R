@@ -18,7 +18,7 @@ bvol<-c( impute(cbind(bvol,bvol))[,1])
 initialN<-length(bvol)
 ffmerge<-cbind( ffmerge, bvol ) 
 mysel<-rep( c(1,2) , (length( bvol )/2-1) )
-mysel<-rnorm( length( bvol ) ) < 1.e6
+mysel<-rnorm( length( bvol ) ) < 1.e7
 ff<-subset( ffmerge , mysel )
 ####### some imputation ##### 
 ff$BMIprepreg[ is.na( ff$BMIprepreg ) ]<-mean( ff$BMIprepreg,na.rm = T ) 
@@ -34,7 +34,7 @@ demog<-as.matrix(  ff[,wh] )  # just adj_home
 nv<-4
 colnames( demog )<-colnames( ff )[wh]
 ######### setup analysis #########
-sccan<-sparseDecom2( inmatrix=list( demog , brain ), inmask = c( NA , NA ) ,
+sccan<-sparseDecom2( inmatrix=list( demog , brain ), inmask = c( NA , NA ) , mycoption = 0,
   sparseness=c( 0.1 ,  0.1 ), nvecs=nv, its=55, smooth=0, perms=np, cthresh = c(0, 0), robust=1 )
 for ( ind in 1:nv ) {
   print(paste("Sccanvec",ind,"pvalue",sccan$ccasummary[1,ind+1],"corr",sccan$ccasummary[2,ind+1]))

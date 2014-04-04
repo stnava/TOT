@@ -37,7 +37,7 @@ if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then
 fi
 #  segmentation 
 if [[ ! -s ${nm}Segmentation.nii.gz ]] ; then 
-  antsAtroposN4.sh -d 3 -m 1 -n 6 -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}
+  antsAtroposN4.sh -d 3 -m 1 -n 12 -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}
 fi 
 for x in 1 2 ; do 
   let labnum=${x}+1
@@ -49,7 +49,7 @@ for x in 1 2 ; do
 done
 ImageMath 3 ${nm}_cw_mask.nii.gz + ${nm}_cw_mask1.nii.gz ${nm}_cw_mask2.nii.gz
 # if [[ ! -s ${nm}_2SegmentationPosteriors1.nii.gz ]] ; then
-  antsAtroposN4.sh -d 3 -m 1 -n 6 -a $subjectimage  -x ${nm}_cw_mask.nii.gz -c 2 -p ${nm}_cwpriors%d.nii.gz -w 0.0 -o ${nm}_2
+  antsAtroposN4.sh -d 3 -m 1 -n 12 -a $subjectimage  -x ${nm}_cw_mask.nii.gz -c 2 -p ${nm}_cwpriors%d.nii.gz -w 0.25 -o ${nm}_2
 # fi
 for x in 1 2 ; do 
   let labnum=${x}+1
@@ -57,7 +57,7 @@ for x in 1 2 ; do
   SmoothImage 3 ${nm}_priors${labnum}.nii.gz 1 ${nm}_priors${labnum}.nii.gz
   ImageMath 3 ${nm}_priors${labnum}.nii.gz Normalize ${nm}_priors${labnum}.nii.gz
 done
-antsAtroposN4.sh -d 3 -m 1 -n 6 -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}_3
+antsAtroposN4.sh -d 3 -m 1 -n 12 -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}_3
 # if [[ -s $t1image ]] ; then 
 #  antsAtroposN4.sh -d 3 -m 1 -n 6 -a $subjectimage -a $t1image -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.1 -o ${nm}_2
 # fi

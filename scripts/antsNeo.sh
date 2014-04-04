@@ -49,7 +49,7 @@ for x in 1 2 ; do
 done
 ImageMath 3 ${nm}_cw_mask.nii.gz + ${nm}_cw_mask1.nii.gz ${nm}_cw_mask2.nii.gz
 # if [[ ! -s ${nm}_2SegmentationPosteriors1.nii.gz ]] ; then
-  antsAtroposN4.sh -d 3 -m 1 -n 12 -a $subjectimage  -x ${nm}_cw_mask.nii.gz -c 2 -p ${nm}_cwpriors%d.nii.gz -w 0.25 -o ${nm}_2
+  antsAtroposN4.sh -d 3 -m 1 -n 12 -a $subjectimage  -x ${nm}_cw_mask.nii.gz -c 2 -p ${nm}_cwpriors%d.nii.gz -w 0.1 -o ${nm}_2
 # fi
 for x in 1 2 ; do 
   let labnum=${x}+1

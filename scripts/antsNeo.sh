@@ -33,7 +33,7 @@ if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then
   antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmask.nii.gz $invmap -n NearestNeighbor
 fi
 #  segmentation 
-antsAtroposN4.sh -d 3 -m 1 -n 6 -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}
+antsAtroposN4.sh -d 3 -m 5 -n 6 -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}
 #  DiReCT - not done yet
 #  KellyKapowski -d 3 ...
 #

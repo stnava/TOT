@@ -35,29 +35,30 @@ if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then
   done
   antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmask.nii.gz $invmap -n NearestNeighbor
 fi
+atits=5
 #  segmentation 
 if [[ ! -s ${nm}Segmentation.nii.gz ]] ; then 
-  antsAtroposN4.sh -d 3 -m 1 -n 12 -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}
+  antsAtroposN4.sh -d 3 -m 1 -n $atits -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}
 fi 
 for x in 1 2 ; do 
   let labnum=${x}+1
   ThresholdImage 3  ${nm}Segmentation.nii.gz ${nm}_cw_mask${x}.nii.gz $labnum $labnum
-  LabelClustersUniquely 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cw_mask${x}.nii.gz 500  # get rid of small islands of disconnected WM
-  ThresholdImage 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cw_mask${x}.nii.gz 1 Inf
+#  LabelClustersUniquely 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cw_mask${x}.nii.gz 500  # get rid of small islands of disconnected WM
+#  ThresholdImage 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cw_mask${x}.nii.gz 1 Inf
   cp ${nm}SegmentationPosteriors${labnum}.nii.gz   ${nm}_cwpriors${x}.nii.gz
-  MultiplyImages 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cwpriors${x}.nii.gz ${nm}_cwpriors${x}.nii.gz
+#  MultiplyImages 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cwpriors${x}.nii.gz ${nm}_cwpriors${x}.nii.gz
 done
 ImageMath 3 ${nm}_cw_mask.nii.gz + ${nm}_cw_mask1.nii.gz ${nm}_cw_mask2.nii.gz
-# if [[ ! -s ${nm}_2SegmentationPosteriors1.nii.gz ]] ; then
-  antsAtroposN4.sh -d 3 -m 1 -n 12 -a $subjectimage  -x ${nm}_cw_mask.nii.gz -c 2 -p ${nm}_cwpriors%d.nii.gz -w 0.1 -o ${nm}_2
-# fi
+if [[ ! -s ${nm}_2SegmentationPosteriors1.nii.gz ]] ; then
+  antsAtroposN4.sh -d 3 -m 1 -n 20 -a $subjectimage  -x ${nm}_cw_mask.nii.gz -c 2 -p ${nm}_cwpriors%d.nii.gz -w 0.25 -o ${nm}_2
+fi
 for x in 1 2 ; do 
   let labnum=${x}+1
   cp ${nm}_2SegmentationPosteriors${x}.nii.gz ${nm}_priors${labnum}.nii.gz
-  SmoothImage 3 ${nm}_priors${labnum}.nii.gz 1 ${nm}_priors${labnum}.nii.gz
+  SmoothImage 3 ${nm}_priors${labnum}.nii.gz 0.5 ${nm}_priors${labnum}.nii.gz
   ImageMath 3 ${nm}_priors${labnum}.nii.gz Normalize ${nm}_priors${labnum}.nii.gz
 done
-antsAtroposN4.sh -d 3 -m 1 -n 12 -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}_3
+antsAtroposN4.sh -d 3 -m 1 -n $atits -a $subjectimage -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}_3
 # if [[ -s $t1image ]] ; then 
 #  antsAtroposN4.sh -d 3 -m 1 -n 6 -a $subjectimage -a $t1image -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.1 -o ${nm}_2
 # fi

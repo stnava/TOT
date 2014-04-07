@@ -37,8 +37,11 @@ if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then
 fi
 atits=30
 #  segmentation 
-ImageMath 3 ${nm}_norm.nii.gz Normalize $subjectimage
-ThresholdImage 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz 0.33 1
+ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.02 0.995 256
+N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 8
+N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 4
+ImageMath 3 ${nm}_norm.nii.gz Normalize ${nm}_norm.nii.gz
+ThresholdImage 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz 0.3 1
 ImageMath 3 ${nm}_brainmask.nii.gz ME ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz GetLargestComponent ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz MD ${nm}_brainmask.nii.gz 2 

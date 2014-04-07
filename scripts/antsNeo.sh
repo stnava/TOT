@@ -45,14 +45,29 @@ ThresholdImage 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz 0.3 1
 ImageMath 3 ${nm}_brainmask.nii.gz ME ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz GetLargestComponent ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz MD ${nm}_brainmask.nii.gz 2 
-ImageMath 3 ${nm}_laplacian.nii.gz Laplacian ${nm}_norm.nii.gz 1
-echo produced ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz
-if [[ ! -s ${nm}Segmentation.nii.gz ]] ; then 
-  antsAtroposN4.sh -d 3 -m 3 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm} -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" 
-fi 
+antsLaplacianBoundaryCondition --output ${nm}_laplacian.nii.gz --mask  ${nm}_brainmask.nii.gz  --input ${nm}_norm.nii.gz 
+if [[ -s ${nm}_laplacian.nii.gz ]] &&  [[ -s ${nm}_brainmask.nii.gz ]] &&  [[ -s ${nm}_norm.nii.gz ]] ; then
+  echo produced ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_laplacian.nii.gz
+else 
+  echo should have produced ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_laplacian.nii.gz
+  exit
+fi
 if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
   antsAtroposN4.sh -d 3 -m 3 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" -a ${nm}_laplacian.nii.gz 
 fi 
+if [[ ! -s ${nm}Segmentation.nii.gz ]] ; then 
+  antsAtroposN4.sh -d 3 -m 3 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm} -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" 
+fi 
+
+exit 
+
+# find regions where gm is mislabeled as csf
+ThresholdImage 3 ${nm}LapSegmentation.nii.gz ${nm}LapSegmentationCSF.nii.gz 1 1
+ThresholdImage 3 ${nm}LapSegmentation.nii.gz ${nm}LapSegmentationGM.nii.gz  2 2 
+ThresholdImage 3 ${nm}Segmentation.nii.gz    ${nm}SegmentationGM.nii.gz  2 2 
+ImageMath 3 ${nm}temp.nii.gz + ${nm}SegmentationGM.nii.gz ${nm}LapSegmentationCSF.nii.gz
+ThresholdImage 3 ${nm}temp.nii.gz  ${nm}temp.nii.gz 2 2 
+
 
 exit
 for x in 1 2 ; do 

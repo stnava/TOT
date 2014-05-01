@@ -37,7 +37,7 @@ if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then
 fi
 atits=30
 #  segmentation 
-ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.02 0.995 256
+ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.005 0.995 256
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 8
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 4
 ImageMath 3 ${nm}_norm.nii.gz Normalize ${nm}_norm.nii.gz
@@ -55,10 +55,7 @@ fi
 if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
   antsAtroposN4.sh -d 3 -m 3 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" -a ${nm}_laplacian.nii.gz 
 fi 
-if [[ ! -s ${nm}Segmentation.nii.gz ]] ; then 
-  antsAtroposN4.sh -d 3 -m 3 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm} -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" 
-fi 
-
+echo "Done!"
 exit 
 
 # find regions where gm is mislabeled as csf

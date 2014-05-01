@@ -1,7 +1,7 @@
 #  registration
 templatedir=/Users/stnava/data/TOT/template/
 template=${templatedir}local_17_template.nii.gz
-templatepriors="${templatedir}PriorsX/priors"
+templatepriors="${templatedir}PriorsY/priors"
 templatebmask=${templatedir}local_17_template_brain_mask.nii.gz
 subjectimage=$1
 outdir=$2
@@ -31,17 +31,21 @@ fi
 invmap=" -t [${nm}0GenericAffine.mat,1] -t ${nm}1InverseWarp.nii.gz -r $subjectimage "
 if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then 
   for  x in 1 2 3 4 5 6 ; do 
-    antsApplyTransforms -d 3 -i ${templatepriors}${x}.nii.gz -o ${nm}_priors${x}.nii.gz $invmap 
+    antsApplyTransforms -d 3 -i ${templatepriors}${x}sig.nii.gz -o ${nm}_priors${x}.nii.gz $invmap 
   done
-  antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmask.nii.gz $invmap -n NearestNeighbor
+  antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmaskt.nii.gz $invmap -n NearestNeighbor
+  ImageMath 3 ${nm}_brainmaskt.nii.gz ME ${nm}_brainmaskt.nii.gz 2
 fi
 atits=30
-#  segmentation 
+# segmentation 
 ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.005 0.995 256
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 8
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 4
 ImageMath 3 ${nm}_norm.nii.gz Normalize ${nm}_norm.nii.gz
 ThresholdImage 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz 0.3 1
+ImageMath 3 ${nm}_brainmask.nii.gz + ${nm}_brainmask.nii.gz ${nm}_brainmaskt.nii.gz
+ThresholdImage 3 ${nm}_brainmask.nii.gz ${nm}_brainmask.nii.gz 0.25 Inf
+ImageMath 3 ${nm}_brainmask.nii.gz FillHoles ${nm}_brainmask.nii.gz 
 ImageMath 3 ${nm}_brainmask.nii.gz ME ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz GetLargestComponent ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz MD ${nm}_brainmask.nii.gz 2 

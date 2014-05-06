@@ -55,7 +55,7 @@ antsLaplacianBoundaryCondition.R --output ${nm}_laplacian.nii.gz --mask  ${nm}_b
 mdw=${nm}_md_normWarped.nii.gz
 if [[ -s $md ]] && [[ ${#md} -gt 3 ]]  ; then 
   MultiplyImages 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_norm.nii.gz
-  antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $md -o ${nm}_md_norm -t r
+  antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $md -o ${nm}_md_norm -t sr
   Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i kmeans[3] -a $mdw -c [1,0] -o [${nm}_md_seg.nii.gz,${nm}_md_prob%0d.nii.gz]
   MultiplyImages 3 ${nm}_md_prob3.nii.gz 0.25 ${nm}_md_prob3.nii.gz
   ImageMath 3 ${nm}_norm.nii.gz + ${nm}_norm.nii.gz ${nm}_md_prob3.nii.gz

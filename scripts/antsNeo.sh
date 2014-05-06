@@ -5,6 +5,7 @@ templatepriors=${templatedir}PriorsX/priors
 templatebmask=${templatedir}local_17_template_brain_mask.nii.gz
 subjectimage=$1
 outdir=$2
+md=$3
 if [[ ! -s $template ]] ; then 
   echo template $template does not exist. exiting.
   exit 1
@@ -38,7 +39,7 @@ if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then
 fi
 atits=30
 # segmentation 
-ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.02 0.995 256
+ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.05 0.995 256
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 8
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 4
 ImageMath 3 ${nm}_norm.nii.gz Normalize ${nm}_norm.nii.gz
@@ -50,14 +51,22 @@ ImageMath 3 ${nm}_brainmask.nii.gz ME ${nm}_brainmask.nii.gz 2
 ImageMath 3 ${nm}_brainmask.nii.gz GetLargestComponent ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz MD ${nm}_brainmask.nii.gz 2 
 antsLaplacianBoundaryCondition.R --output ${nm}_laplacian.nii.gz --mask  ${nm}_brainmask.nii.gz  --input ${nm}_norm.nii.gz 
+mdw=${nm}_md_normWarped.nii.gz
+if [[ -s $md ]] && [[ ${#md} -gt 3 ]] && [[ ! -s $mdw ]] ; then 
+  MultiplyImages 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_norm.nii.gz
+  antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $md -o ${nm}_md_norm -t r
+fi
 if [[ -s ${nm}_laplacian.nii.gz ]] &&  [[ -s ${nm}_brainmask.nii.gz ]] &&  [[ -s ${nm}_norm.nii.gz ]] ; then
   echo produced ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_laplacian.nii.gz
 else 
-  echo should have produced ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_laplacian.nii.gz
+  echo should have produced ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_laplacian.nii.gz 
   exit
 fi
-if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
-  antsAtroposN4.sh -d 3 -m 3 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" -a ${nm}_laplacian.nii.gz 
+if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
+  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" -a ${nm}_laplacian.nii.gz 
+fi 
+if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ -s $mdw  ]] ; then 
+  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" -a ${nm}_laplacian.nii.gz  -a $mdw
 fi 
 echo "Done!"
 exit 

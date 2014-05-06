@@ -44,6 +44,7 @@ N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 8
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 4
 ImageMath 3 ${nm}_norm.nii.gz Normalize ${nm}_norm.nii.gz
 ThresholdImage 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz 0.3 1
+MultiplyImages 3 ${nm}_brainmask.nii.gz ${nm}_brainmaskt.nii.gz ${nm}_brainmask.nii.gz
 ImageMath 3 ${nm}_brainmask.nii.gz + ${nm}_brainmask.nii.gz ${nm}_brainmaskt.nii.gz
 ThresholdImage 3 ${nm}_brainmask.nii.gz ${nm}_brainmask.nii.gz 0.25 Inf
 ImageMath 3 ${nm}_brainmask.nii.gz FillHoles ${nm}_brainmask.nii.gz 

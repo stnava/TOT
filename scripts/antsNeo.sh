@@ -30,13 +30,13 @@ if [[ ! -s ${nm}jacobian.nii.gz ]] ; then
 fi
 #  map priors 
 invmap=" -t [${nm}0GenericAffine.mat,1] -t ${nm}1InverseWarp.nii.gz -r $subjectimage "
-if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then 
+# if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then 
   for  x in 1 2 3 4 5 6 ; do 
     antsApplyTransforms -d 3 -i ${templatepriors}${x}.nii.gz -o ${nm}_priors${x}.nii.gz $invmap 
   done
   antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmaskt.nii.gz $invmap -n NearestNeighbor
   ImageMath 3 ${nm}_brainmaskt.nii.gz ME ${nm}_brainmaskt.nii.gz 2
-fi
+# fi
 atits=30
 # segmentation 
 ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.05 0.995 256
@@ -57,8 +57,10 @@ if [[ -s $md ]] && [[ ${#md} -gt 3 ]]  ; then
   MultiplyImages 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_norm.nii.gz
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $md -o ${nm}_md_norm -t sr
   Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i kmeans[3] -a $mdw -c [1,0] -o [${nm}_md_seg.nii.gz,${nm}_md_prob%0d.nii.gz]
+  MultiplyImages 3 ${nm}_md_prob3.nii.gz 0.01 ${nm}_temp.nii.gz
   MultiplyImages 3 ${nm}_md_prob3.nii.gz 0.25 ${nm}_md_prob3.nii.gz
-  ImageMath 3 ${nm}_norm.nii.gz + ${nm}_norm.nii.gz ${nm}_md_prob3.nii.gz
+  MultiplyImages 3 ${nm}_priors3.nii.gz ${nm}_temp.nii.gz ${nm}_priors3.nii.gz  # reduce wm prob here
+  ImageMath 3 ${nm}_norm.nii.gz + ${nm}_norm.nii.gz ${nm}_md_prob3.nii.gz  # increase csf intensity 
 fi
 if [[ -s ${nm}_laplacian.nii.gz ]] &&  [[ -s ${nm}_brainmask.nii.gz ]] &&  [[ -s ${nm}_norm.nii.gz ]] ; then
   echo produced ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_laplacian.nii.gz

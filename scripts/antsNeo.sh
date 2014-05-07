@@ -69,9 +69,9 @@ else
   exit
 fi
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
-if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
+# if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
   antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" -a ${nm}_laplacian.nii.gz 
-fi 
+# fi 
 echo "Done!"
 exit 
 

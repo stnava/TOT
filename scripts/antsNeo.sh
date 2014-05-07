@@ -59,11 +59,11 @@ t1w=${nm}_t1_normWarped.nii.gz
 echo $t1 T1
 if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]]  ; then 
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -o ${nm}_t1_norm -t r
-#  Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i kmeans[3] -a $t1w -c [1,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz]
-#  MultiplyImages 3 ${nm}_t1_prob3.nii.gz 0.01 ${nm}_temp.nii.gz
-#  MultiplyImages 3 ${nm}_t1_prob3.nii.gz 0.25 ${nm}_t1_prob3.nii.gz
-#  MultiplyImages 3 ${nm}_priors3.nii.gz ${nm}_temp.nii.gz ${nm}_priors3.nii.gz  # reduce wm prob here
-#  ImageMath 3 ${nm}_norm.nii.gz + ${nm}_norm.nii.gz ${nm}_t1_prob3.nii.gz  # increase csf intensity 
+  Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i kmeans[3] -a $t1w -c [1,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz]
+  MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.01 ${nm}_temp.nii.gz
+  MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.25 ${nm}_t1_prob1.nii.gz
+  MultiplyImages 3 ${nm}_priors3.nii.gz ${nm}_temp.nii.gz ${nm}_priors3.nii.gz  # reduce wm prob here
+  ImageMath 3 ${nm}_norm.nii.gz + ${nm}_norm.nii.gz ${nm}_t1_prob1.nii.gz  # increase csf intensity 
 fi
 mdw=${nm}_md_normWarped.nii.gz
 echo $md MD
@@ -84,7 +84,7 @@ else
 fi
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
-  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" -a ${nm}_laplacian.nii.gz -a $t1w 
+  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap -a ${nm}_norm.nii.gz -r "[0.1,1x1x1]" -a ${nm}_laplacian.nii.gz 
 # fi 
 echo "Done!"
 exit 

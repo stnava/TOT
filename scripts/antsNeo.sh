@@ -59,7 +59,7 @@ t1w=${nm}_t1_normWarped.nii.gz
 echo $t1 T1
 if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]]  ; then 
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -o ${nm}_t1_norm -t r
-  Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i kmeans[3] -a $t1w -c [1,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz]
+  Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i PriorProbabilityImages[3,${nm}_priors%0d.nii.gz,0.25] -a $t1w -c [30,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz] -m [0.1,1x1x1]
   MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.01 ${nm}_temp.nii.gz
   MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.25 ${nm}_t1_prob1.nii.gz
   MultiplyImages 3 ${nm}_priors3.nii.gz ${nm}_temp.nii.gz ${nm}_priors3.nii.gz  # reduce wm prob here

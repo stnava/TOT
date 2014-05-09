@@ -7,8 +7,8 @@ subjectimage=$1
 outdir=$2
 md=$3
 t1=$4
-if [[ ${#t1} -lt 3 ]] ; then echo no t1 ;  exit ; fi;
-if [[ ${#md} -lt 3 ]] ; then echo no md ;  exit ; fi;
+# if [[ ${#t1} -lt 3 ]] ; then echo no t1 ;  exit ; fi;
+# if [[ ${#md} -lt 3 ]] ; then echo no md ;  exit ; fi;
 if [[ ! -s $template ]] ; then 
   echo template $template does not exist. exiting.
   exit 1
@@ -60,6 +60,7 @@ echo $t1 T1
 if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]]  ; then 
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -o ${nm}_t1_norm -t r
   N3BiasFieldCorrection 3 $t1w  $t1w  4
+  antsLaplacianBoundaryCondition.R --output ${nm}_laplacian2.nii.gz --mask  ${nm}_brainmask.nii.gz  --input $t1w
   Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i PriorProbabilityImages[3,${nm}_priors%0d.nii.gz,0.25]  -c [50,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz] -m [0.1,1x1x1] -a $t1w -a ${nm}_norm.nii.gz 
   MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.01 ${nm}_temp.nii.gz
   MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.15 ${nm}_t1_prob1.nii.gz
@@ -68,13 +69,13 @@ if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]]  ; then
 fi
 mdw=${nm}_md_normWarped.nii.gz
 echo $md MD
-if [[ -s $md ]] && [[ ${#md} -gt 3 ]]  && [[ 1 == 0 ]] ; then 
+if [[ -s $md ]] && [[ ${#md} -gt 3 ]]  && [[ ${#t1} -lt 3 ]] ; then 
   MultiplyImages 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_norm.nii.gz
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $md -o ${nm}_md_norm -t sr
   Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i kmeans[3] -a $mdw -c [1,0] -o [${nm}_md_seg.nii.gz,${nm}_md_prob%0d.nii.gz]
   MultiplyImages 3 ${nm}_md_prob3.nii.gz 0.01 ${nm}_temp.nii.gz
-  MultiplyImages 3 ${nm}_md_prob3.nii.gz 0.25 ${nm}_md_prob3.nii.gz
-  MultiplyImages 3 ${nm}_priors3.nii.gz ${nm}_temp.nii.gz ${nm}_priors3.nii.gz  # reduce wm prob here
+  MultiplyImages 3 ${nm}_md_prob3.nii.gz 0.15 ${nm}_md_prob3.nii.gz
+#  MultiplyImages 3 ${nm}_priors3.nii.gz ${nm}_temp.nii.gz ${nm}_priors3.nii.gz  # reduce wm prob here
   ImageMath 3 ${nm}_norm.nii.gz + ${nm}_norm.nii.gz ${nm}_md_prob3.nii.gz  # increase csf intensity 
 fi
 if [[ -s ${nm}_laplacian.nii.gz ]] &&  [[ -s ${nm}_brainmask.nii.gz ]] &&  [[ -s ${nm}_norm.nii.gz ]] ; then
@@ -85,7 +86,7 @@ else
 fi
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
-  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x1]"  -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
+  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x0]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
 # fi 
 echo "Done!"
 exit 

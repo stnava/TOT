@@ -57,14 +57,14 @@ ImageMath 3 ${nm}_brainmask.nii.gz MD ${nm}_brainmask.nii.gz 2
 antsLaplacianBoundaryCondition.R --output ${nm}_laplacian.nii.gz --mask  ${nm}_brainmask.nii.gz  --input ${nm}_norm.nii.gz 
 t1w=${nm}_t1_normWarped.nii.gz
 echo $t1 T1
-if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]]  ; then 
+if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]] && [[ ! -s ${nm}_t1_prob1.nii.gz ]]  ; then 
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -o ${nm}_t1_norm -t r
   N3BiasFieldCorrection 3 $t1w  $t1w  4
   antsLaplacianBoundaryCondition.R --output ${nm}_laplacian2.nii.gz --mask  ${nm}_brainmask.nii.gz  --input $t1w
   Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i PriorProbabilityImages[3,${nm}_priors%0d.nii.gz,0.25]  -c [50,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz] -m [0.1,1x1x1] -a $t1w -a ${nm}_norm.nii.gz 
-  MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.01 ${nm}_temp.nii.gz
   MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.15 ${nm}_t1_prob1.nii.gz
-#  MultiplyImages 3 ${nm}_priors3.nii.gz ${nm}_temp.nii.gz ${nm}_priors3.nii.gz  # reduce wm prob here
+fi
+if [[ -s  ${nm}_t1_prob1.nii.gz ]]  ; then 
   ImageMath 3 ${nm}_norm.nii.gz + ${nm}_norm.nii.gz ${nm}_t1_prob1.nii.gz  # increase csf intensity 
 fi
 mdw=${nm}_md_normWarped.nii.gz
@@ -85,9 +85,23 @@ else
   exit
 fi
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
-# if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
+if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
   antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x0]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
-# fi 
+fi 
+
+DIRECT=KellyKapowski
+DIRECT_CONVERGENCE="[45,0.0,10]"
+DIRECT_THICKNESS_PRIOR="10"
+DIRECT_GRAD_STEP_SIZE="0.025"
+DIRECT_SMOOTHING_SIGMA="1.5"
+DIRECT_NUMBER_OF_DIFF_COMPOSITIONS="10"
+dimension=3
+exe_direct="$DIRECT -d $dimension -s [${nm}LapSegmentation.nii.gz,2,3]"
+tissueprobs=" -g ${nm}LapSegmentationPosteriors2.nii.gz -w ${nm}LapSegmentationPosteriors3.nii.gz "
+exe_direct="${exe_direct} $tissueprobs -o ${nm}Thickness.nii.gz"
+exe_direct="${exe_direct} -c ${DIRECT_CONVERGENCE} -r ${DIRECT_GRAD_STEP_SIZE}"
+exe_direct="${exe_direct} -m ${DIRECT_SMOOTHING_SIGMA} -n ${DIRECT_NUMBER_OF_DIFF_COMPOSITIONS}"
+$exe_direct
 echo "Done!"
 exit 
 

@@ -98,7 +98,7 @@ if [[ ${#malfdir} -gt 3 ]] ; then
     segcmd=" $segcmd -g ${malfdir}/${ct}_T2.nii.gz -l  ${malfdir}/${ct}_seg.nii.gz "
   done 
   MultiplyImages 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_brain.nii.gz 
-  antsMalfLabeling.sh -k 0 -c 0 \
+  antsMalfLabeling.sh -k 0 -c 0 -q 1 \
     -d 3 \
     -o ${nm}_fusion \
     -t ${nm}_brain.nii.gz \

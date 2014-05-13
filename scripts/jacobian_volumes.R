@@ -53,7 +53,7 @@ write.csv(vols,"hipp_amyg_vols.csv",row.names=F)
 ########### now eanat ###########
 mat<-imagesToMatrix( jfn, bmask )
 lmat<-lowrankRowMatrix( mat, 10 )
-eanat<-sparseDecom( mat, bmask, sparseness=0.15, nvecs=10, its=2, cthresh=25000, smooth=1, mycoption=1 )
+eanat<-sparseDecom( mat, bmask, sparseness=0.08, nvecs=20, its=4, cthresh=25000, smooth=1, mycoption=1 )
 eanatseg<-eigSeg( bmask, eanat$eigenanatomyimages )
 antsImageWrite(eanatseg,'temp.nii.gz')
 proj<-mat %*% t( imageListToMatrix( eanat$eigenanatomyimages , bmask ) )

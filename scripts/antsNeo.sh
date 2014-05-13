@@ -86,13 +86,14 @@ else
 fi
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
 if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
-  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x0]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
+  ImageMath 3 ${nm}_norm.nii.gz PeronaMalik ${nm}_norm.nii.gz 4 0.5 
+  antsAtroposN4.sh -d 3 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.1 -o ${nm}Lap         -r "[0.075,1x1x0]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
 fi 
 
 DIRECT=KellyKapowski
 DIRECT_CONVERGENCE="[45,0.0,10]"
 DIRECT_THICKNESS_PRIOR="10"
-DIRECT_GRAD_STEP_SIZE="0.015"
+DIRECT_GRAD_STEP_SIZE="0.02"
 DIRECT_SMOOTHING_SIGMA="1.5"
 DIRECT_NUMBER_OF_DIFF_COMPOSITIONS="10"
 dimension=3

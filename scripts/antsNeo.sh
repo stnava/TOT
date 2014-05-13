@@ -88,7 +88,7 @@ fi
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
 if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
   ImageMath 3 ${nm}_norm.nii.gz PeronaMalik ${nm}_norm.nii.gz 2 0.5 
-  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x1]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
+  antsAtroposN4.sh -d 3 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x1]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
 fi 
 echo "Finished segmentation"
 if [[ ${#malfdir} -gt 3 ]] ; then 

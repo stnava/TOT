@@ -7,6 +7,7 @@ subjectimage=$1
 outdir=$2
 md=$3
 t1=$4
+malfdir=$5
 # if [[ ${#t1} -lt 3 ]] ; then echo no t1 ;  exit ; fi;
 # if [[ ${#md} -lt 3 ]] ; then echo no md ;  exit ; fi;
 if [[ ! -s $template ]] ; then 
@@ -87,9 +88,23 @@ fi
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
 if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
   ImageMath 3 ${nm}_norm.nii.gz PeronaMalik ${nm}_norm.nii.gz 4 0.5 
-  antsAtroposN4.sh -d 3 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.1 -o ${nm}Lap         -r "[0.075,1x1x0]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
+  antsAtroposN4.sh -d 3 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.075,1x1x0]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
 fi 
-
+echo "Finished segmentation"
+if [[ ${#malfdir} -gt 3 ]] ; then 
+  # build malf label list 
+  segcmd=""
+  for ct in 01 02 03 04 05 06 07 08 09 10  ; do 
+    segcmd=" $segcmd -g ${malfdir}/${ct}_T2.nii.gz -l  ${malfdir}/${ct}_seg.nii.gz "
+  done 
+  MultiplyImages 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_brain.nii.gz 
+  antsMalfLabeling.sh -k 0 -c 0 \
+    -d 3 \
+    -o ${nm}_fusion \
+    -t ${nm}_brain.nii.gz \
+    $segcmd
+  echo "MALF Done!"
+fi
 DIRECT=KellyKapowski
 DIRECT_CONVERGENCE="[45,0.0,10]"
 DIRECT_THICKNESS_PRIOR="10"
@@ -103,42 +118,5 @@ exe_direct="${exe_direct} $tissueprobs -o ${nm}Thickness.nii.gz"
 exe_direct="${exe_direct} -c ${DIRECT_CONVERGENCE} -r ${DIRECT_GRAD_STEP_SIZE}"
 exe_direct="${exe_direct} -m ${DIRECT_SMOOTHING_SIGMA} -n ${DIRECT_NUMBER_OF_DIFF_COMPOSITIONS}"
 $exe_direct
+echo "Finished Thickness"
 echo "Done!"
-exit 
-
-# find regions where gm is mislabeled as csf
-ThresholdImage 3 ${nm}LapSegmentation.nii.gz ${nm}LapSegmentationCSF.nii.gz 1 1
-ThresholdImage 3 ${nm}LapSegmentation.nii.gz ${nm}LapSegmentationGM.nii.gz  2 2 
-ThresholdImage 3 ${nm}Segmentation.nii.gz    ${nm}SegmentationGM.nii.gz  2 2 
-ImageMath 3 ${nm}temp.nii.gz + ${nm}SegmentationGM.nii.gz ${nm}LapSegmentationCSF.nii.gz
-ThresholdImage 3 ${nm}temp.nii.gz  ${nm}temp.nii.gz 2 2 
-
-
-exit
-for x in 1 2 ; do 
-  let labnum=${x}+1
-  ThresholdImage 3  ${nm}Segmentation.nii.gz ${nm}_cw_mask${x}.nii.gz $labnum $labnum
-#  ImageMath 3 ${nm}_cw_mask${x}.nii.gz GetLargestComponent ${nm}_cw_mask${x}.nii.gz
-  LabelClustersUniquely 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cw_mask${x}.nii.gz 2500  # get rid of small islands of disconnected WM
-  ThresholdImage 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cw_mask${x}.nii.gz 1 Inf
-  cp ${nm}SegmentationPosteriors${labnum}.nii.gz   ${nm}_cwpriors${x}.nii.gz
-  MultiplyImages 3 ${nm}_cw_mask${x}.nii.gz ${nm}_cwpriors${x}.nii.gz ${nm}_cwpriors${x}.nii.gz
-done
-ImageMath 3 ${nm}_cw_mask.nii.gz + ${nm}_cw_mask1.nii.gz ${nm}_cw_mask2.nii.gz
-#if [[ ! -s ${nm}_2SegmentationPosteriors1.nii.gz ]] ; then
-  antsAtroposN4.sh -d 3 -m 1 -n $atits -a ${nm}_norm.nii.gz  -x ${nm}_cw_mask.nii.gz -c 2 -p ${nm}_cwpriors%d.nii.gz -w 0.25 -o ${nm}_2  -a ${nm}_laplacian.nii.gz -r "[0.1,1x1x1]"
-#fi
-for x in 1 2 ; do 
-  let labnum=${x}+1
-  cp ${nm}_2SegmentationPosteriors${x}.nii.gz ${nm}_priors${labnum}.nii.gz
-  SmoothImage 3 ${nm}_priors${labnum}.nii.gz 0. ${nm}_priors${labnum}.nii.gz
-  ImageMath 3 ${nm}_priors${labnum}.nii.gz Normalize ${nm}_priors${labnum}.nii.gz
-done
-antsAtroposN4.sh -d 3 -m 1 -n $atits -a ${nm}_norm.nii.gz -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}_3 -a ${nm}_laplacian.nii.gz -r "[0.1,1x1x1]"
-# if [[ -s $t1image ]] ; then 
-#  antsAtroposN4.sh -d 3 -m 1 -n 6 -a $subjectimage -a $t1image -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.1 -o ${nm}_2
-# fi
-#  DiReCT - not done yet
-#  KellyKapowski -d 3 ...
-#
-#

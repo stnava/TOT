@@ -39,9 +39,9 @@ invmap=" -t [${nm}0GenericAffine.mat,1] -t ${nm}1InverseWarp.nii.gz -r $subjecti
     antsApplyTransforms -d 3 -i ${templatepriors}${x}.nii.gz -o ${nm}_priors${x}.nii.gz $invmap 
   done
   antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmaskt.nii.gz $invmap -n NearestNeighbor
-  ImageMath 3 ${nm}_brainmaskt.nii.gz ME ${nm}_brainmaskt.nii.gz 2
+  ImageMath 3 ${nm}_brainmaskt.nii.gz ME ${nm}_brainmaskt.nii.gz 0
 # fi
-atits=30
+atits=50
 # segmentation 
 ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.05 0.995 256
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 8
@@ -87,14 +87,15 @@ else
 fi
 # if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
 if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
-  ImageMath 3 ${nm}_norm.nii.gz PeronaMalik ${nm}_norm.nii.gz 4 0.5 
-  antsAtroposN4.sh -d 3 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.075,1x1x0]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
+  ImageMath 3 ${nm}_norm.nii.gz PeronaMalik ${nm}_norm.nii.gz 2 0.5 
+  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x0]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
 fi 
 echo "Finished segmentation"
 if [[ ${#malfdir} -gt 3 ]] ; then 
-  # build malf label list 
+  cts=" 01 02 03 04 05 06 07 08 09 10 "
+  echo "begin malf by building malf label list from training data $cts
   segcmd=""
-  for ct in 01 02 03 04 05 06 07 08 09 10  ; do 
+  for ct in $cts  ; do 
     segcmd=" $segcmd -g ${malfdir}/${ct}_T2.nii.gz -l  ${malfdir}/${ct}_seg.nii.gz "
   done 
   MultiplyImages 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_brain.nii.gz 

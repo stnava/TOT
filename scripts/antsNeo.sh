@@ -1,5 +1,5 @@
 #  registration
-rootdir=`PWD`
+rootdir=$PWD
 templatedir=${rootdir}/template/
 template=${templatedir}local_17_template.nii.gz
 templatepriors=${templatedir}PriorsX/priors

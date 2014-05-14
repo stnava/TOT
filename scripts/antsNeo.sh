@@ -64,7 +64,7 @@ if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]] ; then
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -j 0 -o ${nm}_t1_norm -t r
   N3BiasFieldCorrection 3 $t1w  $t1w  4
   antsLaplacianBoundaryCondition.R --output ${nm}_laplacian2.nii.gz --mask  ${nm}_brainmask.nii.gz  --input $t1w
-  Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i PriorProbabilityImages[3,${nm}_priors%0d.nii.gz,0.25]  -c [50,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz] -m [0.1,1x1x1] -a $t1w -a ${nm}_norm.nii.gz
+  Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i PriorProbabilityImages[6,${nm}_priors%d.nii.gz,0.25]  -c [50,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz] -m [0.1,1x1x1] -a $t1w -a ${nm}_norm.nii.gz
   MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.15 ${nm}_t1_prob1.nii.gz
 fi
 if [[ -s  ${nm}_t1_prob1.nii.gz ]]  ; then 

@@ -42,7 +42,6 @@ for  x in 1 2 3 4 5 6 ; do
   antsApplyTransforms -d 3 -i ${templatepriors}${x}.nii.gz -o ${nm}_priors${x}.nii.gz $invmap 
 done
 antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmaskt.nii.gz $invmap -n NearestNeighbor
-ImageMath 3 ${nm}_brainmaskt.nii.gz ME ${nm}_brainmaskt.nii.gz 0
 # segmentation 
 ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.05 0.995 256
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 8
@@ -50,6 +49,7 @@ N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 4
 ImageMath 3 ${nm}_norm.nii.gz Normalize ${nm}_norm.nii.gz
 ThresholdImage 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz 0.3 1
 MultiplyImages 3 ${nm}_brainmask.nii.gz ${nm}_brainmaskt.nii.gz ${nm}_brainmask.nii.gz
+ImageMath 3 ${nm}_brainmaskt.nii.gz ME ${nm}_brainmaskt.nii.gz 5
 ImageMath 3 ${nm}_brainmask.nii.gz + ${nm}_brainmask.nii.gz ${nm}_brainmaskt.nii.gz
 ThresholdImage 3 ${nm}_brainmask.nii.gz ${nm}_brainmask.nii.gz 0.25 Inf
 ImageMath 3 ${nm}_brainmask.nii.gz FillHoles ${nm}_brainmask.nii.gz 

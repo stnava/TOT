@@ -10,7 +10,7 @@ md=$3
 t1=$4
 malfdir=${rootdir}/malf/
 if [[ ! -s $malfdir ]] ; then echo no malfdir ;  exit ; fi
-atits=50
+atits=30
 # if [[ ${#t1} -lt 3 ]] ; then echo no t1 ;  exit ; fi;
 # if [[ ${#md} -lt 3 ]] ; then echo no md ;  exit ; fi;
 if [[ ! -s $template ]] ; then 
@@ -64,7 +64,7 @@ if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]] ; then
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -j 0 -o ${nm}_t1_norm -t r
   N3BiasFieldCorrection 3 $t1w  $t1w  4
   antsLaplacianBoundaryCondition.R --output ${nm}_laplacian2.nii.gz --mask  ${nm}_brainmask.nii.gz  --input $t1w
-  Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i PriorProbabilityImages[3,${nm}_priors%0d.nii.gz,0.25]  -c [50,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz] -m [0.1,1x1x1] -a $t1w -a ${nm}_norm.nii.gz 
+  Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i PriorProbabilityImages[3,${nm}_priors%0d.nii.gz,0.25]  -c [50,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz] -m [0.1,1x1x1] -a $t1w -a ${nm}_norm.nii.gz
   MultiplyImages 3 ${nm}_t1_prob1.nii.gz 0.15 ${nm}_t1_prob1.nii.gz
 fi
 if [[ -s  ${nm}_t1_prob1.nii.gz ]]  ; then 
@@ -87,10 +87,9 @@ else
   echo should have produced ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_laplacian.nii.gz 
   exit
 fi
-# if [[ ! -s ${nm}LapSegmentation.nii.gz ]] && [[ ! -s $mdw  ]] ; then 
 if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then 
   ImageMath 3 ${nm}_norm.nii.gz PeronaMalik ${nm}_norm.nii.gz 2 0.5 
-  antsAtroposN4.sh -d 3 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x1]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
+  antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x1]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
 fi 
 echo "Finished segmentation"
 if [[ ${#malfdir} -gt 3 ]] ; then 

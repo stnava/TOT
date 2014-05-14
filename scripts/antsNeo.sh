@@ -56,10 +56,11 @@ ImageMath 3 ${nm}_brainmask.nii.gz FillHoles ${nm}_brainmask.nii.gz
 ImageMath 3 ${nm}_brainmask.nii.gz ME ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz GetLargestComponent ${nm}_brainmask.nii.gz 2 
 ImageMath 3 ${nm}_brainmask.nii.gz MD ${nm}_brainmask.nii.gz 2 
+ImageMath 3 ${nm}_norm.nii.gz Normalize ${nm}_norm.nii.gz
 antsLaplacianBoundaryCondition.R --output ${nm}_laplacian.nii.gz --mask  ${nm}_brainmask.nii.gz  --input ${nm}_norm.nii.gz 
 t1w=${nm}_t1_normWarped.nii.gz
 echo $t1 T1
-if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]] && [[ ! -s ${nm}_t1_prob1.nii.gz ]]  ; then 
+if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]] ; then 
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -j 0 -o ${nm}_t1_norm -t r
   N3BiasFieldCorrection 3 $t1w  $t1w  4
   antsLaplacianBoundaryCondition.R --output ${nm}_laplacian2.nii.gz --mask  ${nm}_brainmask.nii.gz  --input $t1w

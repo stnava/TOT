@@ -1,5 +1,6 @@
 #  registration
-templatedir=/Users/stnava/data/TOT/template/
+rootdir=`PWD`
+templatedir=${rootdir}/template/
 template=${templatedir}local_17_template.nii.gz
 templatepriors=${templatedir}PriorsX/priors
 templatebmask=${templatedir}local_17_template_brain_mask.nii.gz
@@ -7,7 +8,9 @@ subjectimage=$1
 outdir=$2
 md=$3
 t1=$4
-malfdir=$5
+malfdir=${rootdir}/malf/
+if [[ ! -s $malfdir ]] ; then echo no malfdir ;  exit ; fi
+atits=50
 # if [[ ${#t1} -lt 3 ]] ; then echo no t1 ;  exit ; fi;
 # if [[ ${#md} -lt 3 ]] ; then echo no md ;  exit ; fi;
 if [[ ! -s $template ]] ; then 
@@ -27,21 +30,19 @@ if [[ ! -s $outdir ]] ; then
   mkdir -p $outdir
 fi
 if [[ ! -s ${nm}1InverseWarp.nii.gz ]] ; then 
-  antsRegistrationSyNQuick.sh -f $template -m $subjectimage -o ${nm}
+  antsRegistrationSyNQuick.sh -f $template -m $subjectimage -j 1 -o ${nm}
 fi
 if [[ ! -s ${nm}jacobian.nii.gz ]] ; then 
   CreateJacobianDeterminantImage 3 ${nm}1Warp.nii.gz ${nm}jacobian.nii.gz 0 1
 fi
 #  map priors 
+fwdmap=" -t ${nm}1Warp.nii.gz -t ${nm}0GenericAffine.mat -r $template "
 invmap=" -t [${nm}0GenericAffine.mat,1] -t ${nm}1InverseWarp.nii.gz -r $subjectimage "
-# if [[ ! -s ${nm}_priors6.nii.gz ]] || [[ ! -s ${nm}_brainmask.nii.gz ]] ; then 
-  for  x in 1 2 3 4 5 6 ; do 
-    antsApplyTransforms -d 3 -i ${templatepriors}${x}.nii.gz -o ${nm}_priors${x}.nii.gz $invmap 
-  done
-  antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmaskt.nii.gz $invmap -n NearestNeighbor
-  ImageMath 3 ${nm}_brainmaskt.nii.gz ME ${nm}_brainmaskt.nii.gz 0
-# fi
-atits=50
+for  x in 1 2 3 4 5 6 ; do 
+  antsApplyTransforms -d 3 -i ${templatepriors}${x}.nii.gz -o ${nm}_priors${x}.nii.gz $invmap 
+done
+antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmaskt.nii.gz $invmap -n NearestNeighbor
+ImageMath 3 ${nm}_brainmaskt.nii.gz ME ${nm}_brainmaskt.nii.gz 0
 # segmentation 
 ImageMath 3 ${nm}_norm.nii.gz TruncateImageIntensity $subjectimage 0.05 0.995 256
 N3BiasFieldCorrection 3 ${nm}_norm.nii.gz ${nm}_norm.nii.gz 8
@@ -59,7 +60,7 @@ antsLaplacianBoundaryCondition.R --output ${nm}_laplacian.nii.gz --mask  ${nm}_b
 t1w=${nm}_t1_normWarped.nii.gz
 echo $t1 T1
 if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]] && [[ ! -s ${nm}_t1_prob1.nii.gz ]]  ; then 
-  antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -o ${nm}_t1_norm -t r
+  antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -j 0 -o ${nm}_t1_norm -t r
   N3BiasFieldCorrection 3 $t1w  $t1w  4
   antsLaplacianBoundaryCondition.R --output ${nm}_laplacian2.nii.gz --mask  ${nm}_brainmask.nii.gz  --input $t1w
   Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i PriorProbabilityImages[3,${nm}_priors%0d.nii.gz,0.25]  -c [50,0] -o [${nm}_t1_seg.nii.gz,${nm}_t1_prob%0d.nii.gz] -m [0.1,1x1x1] -a $t1w -a ${nm}_norm.nii.gz 
@@ -72,7 +73,7 @@ mdw=${nm}_md_normWarped.nii.gz
 echo $md MD
 if [[ -s $md ]] && [[ ${#md} -gt 3 ]]  && [[ ${#t1} -lt 3 ]] ; then 
   MultiplyImages 3 ${nm}_norm.nii.gz ${nm}_brainmask.nii.gz ${nm}_norm.nii.gz
-  antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $md -o ${nm}_md_norm -t sr
+  antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $md -j 0 -o ${nm}_md_norm -t sr
   Atropos  -d 3 -x ${nm}_brainmask.nii.gz  -i kmeans[3] -a $mdw -c [1,0] -o [${nm}_md_seg.nii.gz,${nm}_md_prob%0d.nii.gz]
   MultiplyImages 3 ${nm}_md_prob3.nii.gz 0.01 ${nm}_temp.nii.gz
   MultiplyImages 3 ${nm}_md_prob3.nii.gz 0.15 ${nm}_md_prob3.nii.gz
@@ -93,7 +94,7 @@ fi
 echo "Finished segmentation"
 if [[ ${#malfdir} -gt 3 ]] ; then 
   cts=" 01 02 03 04 05 06 07 08 09 10 "
-  echo "begin malf by building malf label list from training data $cts
+  echo "begin malf by building malf label list from training data $cts"
   segcmd=""
   for ct in $cts  ; do 
     segcmd=" $segcmd -g ${malfdir}/${ct}_T2.nii.gz -l  ${malfdir}/${ct}_seg.nii.gz "
@@ -104,7 +105,7 @@ if [[ ${#malfdir} -gt 3 ]] ; then
     -o ${nm}_fusion \
     -t ${nm}_brain.nii.gz \
     $segcmd
-  echo "MALF Done!"
+  echo MALF Done!
 fi
 DIRECT=KellyKapowski
 DIRECT_CONVERGENCE="[45,0.0,10]"
@@ -118,6 +119,9 @@ tissueprobs=" -g ${nm}LapSegmentationPosteriors2.nii.gz -w ${nm}LapSegmentationP
 exe_direct="${exe_direct} $tissueprobs -o ${nm}Thickness.nii.gz"
 exe_direct="${exe_direct} -c ${DIRECT_CONVERGENCE} -r ${DIRECT_GRAD_STEP_SIZE}"
 exe_direct="${exe_direct} -m ${DIRECT_SMOOTHING_SIGMA} -n ${DIRECT_NUMBER_OF_DIFF_COMPOSITIONS}"
-$exe_direct
+if [[ ! -s ${nm}Thickness.nii.gz ]] ; then 
+  $exe_direct
+fi
+antsApplyTransforms -d 3 -i ${nm}Thickness.nii.gz -o ${nm}_ThicknessToTemplate.nii.gz $fwdmap 
 echo "Finished Thickness"
 echo "Done!"

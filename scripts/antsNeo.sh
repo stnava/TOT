@@ -10,7 +10,7 @@ md=$3
 t1=$4
 malfdir=${rootdir}/malf/
 if [[ ! -s $malfdir ]] ; then echo no malfdir ;  exit ; fi
-atits=30
+atits=50
 # if [[ ${#t1} -lt 3 ]] ; then echo no t1 ;  exit ; fi;
 # if [[ ${#md} -lt 3 ]] ; then echo no md ;  exit ; fi;
 if [[ ! -s $template ]] ; then 
@@ -92,7 +92,7 @@ if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then
   antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x1]" -a ${nm}_norm.nii.gz  -a ${nm}_laplacian.nii.gz 
 fi 
 echo "Finished segmentation"
-if [[ ${#malfdir} -gt 3 ]] ; then 
+if [[ ${#malfdir} -gt 3 ]] && [[ ! -s ${nm}_fusionMalfLabels.nii.gz ]] ; then 
   cts=" 01 02 03 04 05 06 07 08 09 10 "
   echo "begin malf by building malf label list from training data $cts"
   segcmd=""

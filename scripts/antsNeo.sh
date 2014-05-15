@@ -45,7 +45,7 @@ done
 antsApplyTransforms -d 3 -i ${templatebmask} -o ${nm}_brainmaskt.nii.gz $invmap -n NearestNeighbor
 ####### get a better brain mask via malf ########
 if [[ ${#malfdir} -gt 3 ]] && [[ ! -s ${nm}_fusionMalfLabels.nii.gz ]] ; then 
-  cts=" 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 "
+  cts=" 01 02 03 04 05 06 07 08 09 10 " # 11 12 13 14 15 16 17 18 19 20 " # can cause memory problems
   echo "begin malf by building malf label list from training data $cts"
   segcmd=""
   for ct in $cts  ; do 

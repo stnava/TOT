@@ -53,7 +53,7 @@ if [[ ${#malfdir} -gt 3 ]] && [[ ! -s ${nm}_fusionMalfLabels.nii.gz ]] ; then
   done 
   ImageMath 3 ${nm}_temp.nii.gz MD ${nm}_brainmaskt.nii.gz 1
   MultiplyImages 3 $subjectimage ${nm}_temp.nii.gz ${nm}_brain.nii.gz 
-  antsMalfLabeling.sh -k 0 -c 0 -q 1 \
+  antsMalfLabeling.sh -k 0 -c 0 -q 1 -j $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS \
     -d 3 \
     -o ${nm}_fusion \
     -t ${nm}_brain.nii.gz \
@@ -140,6 +140,7 @@ fi
 antsApplyTransforms -d 3 -i ${nm}Thickness.nii.gz -o ${nm}_ThicknessToTemplate.nii.gz $fwdmap 
 echo "Finished Thickness"
 # get csv files 
+ImageMath 3 ${nm}_TissueSegmentation.csv LabelStats ${nm}LapSegmentation.nii.gz ${nm}_brainmask.nii.gz
 ThresholdImage 3 ${nm}LapSegmentation.nii.gz ${nm}_fusionMalfLabelsBin.nii.gz  1 Inf
 ImageMath 3 ${nm}_Malf.csv LabelStats ${nm}_fusionMalfLabels.nii.gz ${nm}_fusionMalfLabelsBin.nii.gz
 ThresholdImage 3 ${nm}LapSegmentation.nii.gz ${nm}_fusionMalfLabelsGMBin.nii.gz  2 2 

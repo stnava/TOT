@@ -53,13 +53,15 @@ if [[ ${#malfdir} -gt 3 ]] && [[ ! -s ${nm}_fusionMalfLabels.nii.gz ]] ; then
   done 
   ImageMath 3 ${nm}_temp.nii.gz MD ${nm}_brainmaskt.nii.gz 1
   MultiplyImages 3 $subjectimage ${nm}_temp.nii.gz ${nm}_brain.nii.gz 
-  antsMalfLabeling.sh -m 1 -k 0 -c 0 -q 1 -j $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS \
+  ImageMath 3 ${nm}_brain.nii.gz ClosestSimplifiedHeaderMatrix ${nm}_brain.nii.gz
+  antsMalfLabeling.sh -m 0 -k 1 -c 0 -q 1 -j $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS \
     -d 3 \
     -o ${nm}_fusion \
     -t ${nm}_brain.nii.gz \
     $segcmd
   if [[ -s ${nm}_fusionMalfLabels.nii.gz ]] ; then 
     ImageMath 3 ${nm}_temp.nii.gz ME ${nm}_brainmaskt.nii.gz 5
+    CopyImageHeaderInformation $subjectimage ${nm}_fusionMalfLabels.nii.gz ${nm}_fusionMalfLabels.nii.gz 1 1 1
     ThresholdImage 3 ${nm}_fusionMalfLabels.nii.gz ${nm}_brainmask.nii.gz 1 Inf
     ImageMath 3 ${nm}_brainmask.nii.gz GetLargestComponent ${nm}_brainmask.nii.gz
     ImageMath 3 ${nm}_brainmask.nii.gz addtozero ${nm}_brainmask.nii.gz ${nm}_temp.nii.gz

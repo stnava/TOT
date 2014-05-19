@@ -92,7 +92,7 @@ ImageMath 3 ${nm}_norm.nii.gz Normalize ${nm}_norm.nii.gz
 antsLaplacianBoundaryCondition.R --output ${nm}_laplacian.nii.gz --mask  ${nm}_brainmask.nii.gz  --input ${nm}_norm.nii.gz 
 t1w=${nm}_t1_normWarped.nii.gz
 echo $t1 T1
-if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]] ; then 
+if [[ -s $t1 ]] && [[ ${#t1} -gt 3 ]] && [[ ! -s ${nm}_t1_prob1.nii.gz  ]] ; then 
   antsRegistrationSyNQuick.sh -f ${nm}_norm.nii.gz -m $t1 -j 0 -o ${nm}_t1_norm -t r
   N3BiasFieldCorrection 3 $t1w  $t1w  4
   antsLaplacianBoundaryCondition.R --output ${nm}_laplacian2.nii.gz --mask  ${nm}_brainmask.nii.gz  --input $t1w
@@ -139,4 +139,11 @@ if [[ ! -s ${nm}Thickness.nii.gz ]] ; then
 fi
 antsApplyTransforms -d 3 -i ${nm}Thickness.nii.gz -o ${nm}_ThicknessToTemplate.nii.gz $fwdmap 
 echo "Finished Thickness"
+# get csv files 
+ThresholdImage 3 ${nm}LapSegmentation.nii.gz ${nm}_fusionMalfLabelsBin.nii.gz  1 Inf
+ImageMath 3 ${nm}_Malf.csv LabelStats ${nm}_fusionMalfLabels.nii.gz ${nm}_fusionMalfLabelsBin.nii.gz
+ThresholdImage 3 ${nm}LapSegmentation.nii.gz ${nm}_fusionMalfLabelsGMBin.nii.gz  2 2 
+MultiplyImages 3 ${nm}_fusionMalfLabelsGMBin.nii.gz ${nm}_fusionMalfLabels.nii.gz ${nm}_fusionMalfLabelsGM.nii.gz
+ImageMath 3 ${nm}_MalfGM.csv LabelStats ${nm}_fusionMalfLabelsGM.nii.gz ${nm}_fusionMalfLabelsGMBin.nii.gz
+ImageMath 3 ${nm}_MalfThickness.csv LabelStats ${nm}_fusionMalfLabelsGM.nii.gz ${nm}Thickness.nii.gz
 echo "Done!"

@@ -53,7 +53,7 @@ if [[ ${#malfdir} -gt 3 ]] && [[ ! -s ${nm}_fusionMalfLabels.nii.gz ]] ; then
   done 
   ImageMath 3 ${nm}_temp.nii.gz MD ${nm}_brainmaskt.nii.gz 1
   MultiplyImages 3 $subjectimage ${nm}_temp.nii.gz ${nm}_brain.nii.gz 
-  antsMalfLabeling.sh -k 0 -c 0 -q 1 -j $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS \
+  antsMalfLabeling.sh -m 1 -k 0 -c 0 -q 1 -j $ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS \
     -d 3 \
     -o ${nm}_fusion \
     -t ${nm}_brain.nii.gz \
@@ -68,6 +68,7 @@ if [[ ${#malfdir} -gt 3 ]] && [[ ! -s ${nm}_fusionMalfLabels.nii.gz ]] ; then
     echo MALF Done!
   else 
     echo MALF failed
+    exit
   fi
 fi
 

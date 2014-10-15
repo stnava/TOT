@@ -32,6 +32,7 @@ if ( length(keeper) > 1 )
 }
 print(paste("Will Keep at min:",sum(keepnotes=="TRUE")+nties))
 print(totreview$id[keepnotes=="TRUE"])
+print(totreview$Scan[keepnotes=="TRUE"])
 l1<-length(totreview$id[keepnotes=="TRUE"])
 l2<-length(unique(totreview$id[keepnotes=="TRUE"] ))
 if ( l1 != l2 ) print("there is a bug")

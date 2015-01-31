@@ -65,3 +65,8 @@ print(
 summary(lm(  AnatomicalQualityMeasure ~ MomEd + ITNEnrollment,
   data=demogreo, subset=demogreo$AnatomicalQualityMeasure>=2))
 )
+
+baddt<-c("7006_20140430_DTIfa.nii.gz","7038_20130904_DTIfa.nii.gz","7041_20140826_DTIfa.nii.gz","","","")
+demogreo$DTQualityMeasure[ !is.na(demogreo$DTFileExtension) ]<-1
+for ( dftn in baddt )
+  demogreo$DTQualityMeasure[ demogreo$DTFileExtension == dtfn ]<-0

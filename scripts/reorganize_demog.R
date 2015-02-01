@@ -113,6 +113,7 @@ if ( TRUE )
     ref[  refm == 0  ]<-0
     famask<-antsImageRead('famask_topo_skel.nii.gz',3)
     famask<-antsImageRead('famask.nii.gz',3)
+    famask<-antsImageRead('famask_cerebrum.nii.gz',3)
     mat<-imagesToMatrix( babylist , famask )
     subdemog<-demogreo[sel,]
     confinds<-c(5,7,8,38)
@@ -138,50 +139,58 @@ if ( TRUE )
 #    cor( pp, antsrimpute(mydfc) )
     }
     eanat<-sparseDecom( inmatrix=mat, inmask=famask, nvecs=50,
-      sparseness=0.01, cthresh=50000, its=5, mycoption=0 )
+      sparseness=0.005, cthresh=500, its=5, mycoption=0 )
     jeanat<-joinEigenanatomy( mat , famask, eanat$eig,
       c(1:20)/100.0 , joinMethod='multilevel' )
     useeig<-eanat$eig
     useeig<-jeanat$fusedlist
-    eanat2<-sparseDecom( inmatrix=mat, inmask=famask, nvecs=length(useeig),
-      sparseness=0, cthresh=50000, its=5, mycoption=0,
-      initializationList=useeig )
-    useeig<-eanat2$eig
+#    eanat2<-sparseDecom( inmatrix=mat, inmask=famask, nvecs=length(useeig),
+#      sparseness=0, cthresh=50000, its=5, mycoption=0,
+#      initializationList=useeig )
+#    useeig<-eanat2$eig
     eseg<-eigSeg( famask, useeig )
     antsImageWrite( eseg, 'eseg.nii.gz' )
     avgmat<-abs(imageListToMatrix( useeig , famask ))
     avgmat<-avgmat/rowSums(abs(avgmat))
-    avgmat<- mat %*% t(avgmat)
+    imgmat<-(  mat %*% t(avgmat)  )
+#    imgmat<-svd(mat,nv=0,nu=10)$u
     set.seed(2)
     nreps<-1000
     perfval<-rep(0,nreps)
+    perfvalnoimg<-rep(0,nreps)
+    perfvalperm<-rep(0,nreps) # permuted
     for ( i in 1:nreps )
       {
-      selector<-createDataPartition( poorOrNot, p=0.666 )$Resample1
-      mydf<-data.frame( env=factor(poorOrNot) , img=avgmat, confoundmat )
+      selector<-createDataPartition( subdemog$EGAcalc_cr, p=2.0/3.0 )$Resample1
+      mydf<-data.frame( env=factor(poorOrNot) , confoundmat )
+      mdl<-randomForest( env ~ . , data=mydf[ selector,], importance = T )
+      pp<-predict(mdl,newdata=mydf[-selector,]  )
+      xtab <- table(pp, mydf$env[-selector]  )
+      cm <- confusionMatrix(xtab)
+      perfvalnoimg[i]<-cm$overall[1]
+      # now use imaging
+      mydf<-data.frame( env=factor(poorOrNot) , img=imgmat, confoundmat )
       mdl<-randomForest( env ~ . , data=mydf[ selector,], importance = T )
       pp<-predict(mdl,newdata=mydf[-selector,]  )
       xtab <- table(pp, mydf$env[-selector]  )
       cm <- confusionMatrix(xtab)
       perfval[i]<-cm$overall[1]
-      print(cm$overall)
-      }
-    fullmdl<-randomForest( env ~ . , data=mydf, importance = T )
-
-# permuted
-    perfvalperm<-rep(0,nreps)
-    for ( i in 1:nreps )
-      {
-      poorOrNotPerm<-sample(poorOrNot)
-      selector<-createDataPartition( poorOrNotPerm, p=0.666 )$Resample1
-      mydf<-data.frame( env=factor(poorOrNotPerm) , img=avgmat, confoundmat )
+#      print(cm$overall)
+      imgmatperm<-imgmat[sample(1:nrow(imgmat)), ]
+      mydf<-data.frame( env=factor(poorOrNot) , img=imgmatperm, confoundmat )
       mdl<-randomForest( env ~ . , data=mydf[ selector,], importance = T )
       pp<-predict(mdl,newdata=mydf[-selector,]  )
       xtab <- table(pp, mydf$env[-selector]  )
       cm <- confusionMatrix(xtab)
       perfvalperm[i]<-cm$overall[1]
       }
-    print( t.test( perfvalperm, perfval  ) )
+    fullmdl<-randomForest( env ~ . , data=mydf, importance = T )
+    print( t.test( perfval - perfvalperm  ) )
+    hist(perfval-perfvalperm)
+    print( t.test( perfval - perfvalnoimg  ) )
+    hist(perfval-perfvalnoimg)
+    print(fullmdl$importance)
+######### ok done with prediction #########
     if ( FALSE ) {
       mylm<-(lm( avgmat ~   .  , data=subdemog[,c(12,confinds)]  ))
       mylmres<-bigLMStats(mylm)

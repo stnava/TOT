@@ -1,3 +1,7 @@
+library(ANTsR)
+library(caret)
+library(randomForest)
+library(RRF)
 setwd("/Users/stnava/data/TOT/")
 demog<-read.csv("data/TOT_raw_demog.csv")
 qual<-read.csv("data/TOT_BA_Notes.csv")
@@ -108,40 +112,89 @@ if ( TRUE )
     babylist<-paste("w",na.omit( demogreo$DTFileExtension[sel] ), sep='' )
     ref[  refm == 0  ]<-0
     famask<-antsImageRead('famask_topo_skel.nii.gz',3)
+    famask<-antsImageRead('famask.nii.gz',3)
     mat<-imagesToMatrix( babylist , famask )
     subdemog<-demogreo[sel,]
-    confinds<-c(5,7,8,38,40)
+    confinds<-c(5,7,8,38)
     confoundmat<-antsrimpute(data.matrix(subdemog[,confinds]))
     rmat<-residuals(lm(mat~confoundmat))
-    predmat<-antsrimpute(data.matrix(subdemog[,c(10,12,24)]))
     predmat<-antsrimpute(data.matrix(subdemog[,c(12)]))
-    mat2<-antsrimpute(data.matrix(subdemog[,c(10,12,24,5,6,38,40)]))
-#    sccan<-sparseDecom2( inmatrix=list( rmat, predmat),
-#      inmask=c(famask,NA), nvecs=5, sparseness=c( 0.001, -0.5 ),
-#      cthresh=c(250,0), its=5, mycoption=1, perms=5, smooth=1 )
+    predmat<-antsrimpute(data.matrix(subdemog[,c(10,11,12)]))
+    poorOrNot<-factor( predmat[,3]  < 1 )
+    predmat[,3]<-rank(predmat[,3] )
+    mat2<-antsrimpute(data.matrix(subdemog[,c(10,12,confinds)]))
+    set.seed(9)
+    selector<-createDataPartition( poorOrNot )$Resample1
+    if ( FALSE )
+    {
+    matlist<-list(data.matrix( rmat[selector,]),
+                  data.matrix(predmat)[selector,])
+    sccan<-sparseDecom2( inmatrix=matlist,
+      inmask=c(famask,NA), nvecs=2, sparseness=c( 0.05, 0.9 ),
+      cthresh=c(5000,0), its=15, mycoption=1, perms=0, smooth=0 )
+    avgmat<-abs(imageListToMatrix( sccan$eig1 , famask ))
+    avgmat<-avgmat/rowSums(abs(avgmat))
+    avgmat<- mat %*% t(avgmat)
+#    cor( pp, antsrimpute(mydfc) )
+    }
     eanat<-sparseDecom( inmatrix=mat, inmask=famask, nvecs=50,
       sparseness=0.01, cthresh=50000, its=5, mycoption=0 )
     jeanat<-joinEigenanatomy( mat , famask, eanat$eig,
-      c(0.05,0.075,0.1,0.125,0.15,0.2))
-    #,   joinMethod='multilevel' )
+      c(1:20)/100.0 , joinMethod='multilevel' )
     useeig<-eanat$eig
     useeig<-jeanat$fusedlist
+    eanat2<-sparseDecom( inmatrix=mat, inmask=famask, nvecs=length(useeig),
+      sparseness=0, cthresh=50000, its=5, mycoption=0,
+      initializationList=useeig )
+    useeig<-eanat2$eig
     eseg<-eigSeg( famask, useeig )
     antsImageWrite( eseg, 'eseg.nii.gz' )
     avgmat<-abs(imageListToMatrix( useeig , famask ))
     avgmat<-avgmat/rowSums(abs(avgmat))
     avgmat<- mat %*% t(avgmat)
-    mylm<-(lm( avgmat ~   .  , data=subdemog[,c(12,confinds)]  ))
-    mylmres<-bigLMStats(mylm)
-    qv<-p.adjust( mylmres$beta.p["ITNEnrollment",][] ,method='holm' )
-    sigct<-1
-    esegq<-antsImageClone( eseg )
-    for ( k in as.numeric( which(qv <= 0.05 ) ) )
+    set.seed(2)
+    nreps<-1000
+    perfval<-rep(0,nreps)
+    for ( i in 1:nreps )
       {
-      esegq[ eseg != k & eseg > sigct ]<-0
-      esegq[ eseg == k ]<-sigct
-      sigct<-sigct+1
+      selector<-createDataPartition( poorOrNot, p=0.666 )$Resample1
+      mydf<-data.frame( env=factor(poorOrNot) , img=avgmat, confoundmat )
+      mdl<-randomForest( env ~ . , data=mydf[ selector,], importance = T )
+      pp<-predict(mdl,newdata=mydf[-selector,]  )
+      xtab <- table(pp, mydf$env[-selector]  )
+      cm <- confusionMatrix(xtab)
+      perfval[i]<-cm$overall[1]
+      print(cm$overall)
       }
-    antsImageWrite( esegq, 'esegq.nii.gz' )
-    summary(lm( avgmat[,qv<=0.05] ~   .  , data=subdemog[,c(12,confinds)]  ))
+    fullmdl<-randomForest( env ~ . , data=mydf, importance = T )
+
+# permuted
+    perfvalperm<-rep(0,nreps)
+    for ( i in 1:nreps )
+      {
+      poorOrNotPerm<-sample(poorOrNot)
+      selector<-createDataPartition( poorOrNotPerm, p=0.666 )$Resample1
+      mydf<-data.frame( env=factor(poorOrNotPerm) , img=avgmat, confoundmat )
+      mdl<-randomForest( env ~ . , data=mydf[ selector,], importance = T )
+      pp<-predict(mdl,newdata=mydf[-selector,]  )
+      xtab <- table(pp, mydf$env[-selector]  )
+      cm <- confusionMatrix(xtab)
+      perfvalperm[i]<-cm$overall[1]
+      }
+    print( t.test( perfvalperm, perfval  ) )
+    if ( FALSE ) {
+      mylm<-(lm( avgmat ~   .  , data=subdemog[,c(12,confinds)]  ))
+      mylmres<-bigLMStats(mylm)
+      qv<-p.adjust( mylmres$beta.p["ITNEnrollment",] ,method='none' )
+      sigct<-1
+      esegq<-antsImageClone( eseg )
+      for ( k in as.numeric( which(qv <= 0.05 ) ) )
+        {
+        esegq[ eseg != k & eseg > sigct ]<-0
+        esegq[ eseg == k ]<-sigct
+        sigct<-sigct+1
+        }
+      antsImageWrite( esegq, 'esegq.nii.gz' )
+      summary( lm( avgmat[,qv<=0.05] ~   .  , data=subdemog[,c(12,confinds)]  ))
+    }
   }

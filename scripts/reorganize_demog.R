@@ -190,6 +190,7 @@ if ( TRUE )
     print( t.test( perfval - perfvalnoimg  ) )
     hist(perfval-perfvalnoimg)
     print(fullmdl$importance)
+    plot(density(perfval,bw=0.1))
 ######### ok done with prediction #########
     if ( FALSE ) {
       mylm<-(lm( avgmat ~   .  , data=subdemog[,c(12,confinds)]  ))

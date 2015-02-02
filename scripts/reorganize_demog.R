@@ -161,7 +161,7 @@ if ( TRUE )
     perfvalperm<-rep(0,nreps) # permuted
     for ( i in 1:nreps )
       {
-      selector<-createDataPartition( subdemog$EGAcalc_cr, p=2.0/3.0 )$Resample1
+      selector<-createDataPartition( subdemog$EGAcalc_cr, p=4.0/5.0 )$Resample1
       mydf<-data.frame( env=factor(poorOrNot) , confoundmat )
       mdl<-randomForest( env ~ . , data=mydf[ selector,], importance = T )
       pp<-predict(mdl,newdata=mydf[-selector,]  )

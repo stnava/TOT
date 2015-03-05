@@ -1,0 +1,63 @@
+"ids","Scan","M1","M2","Notes","meanM1_M2","Keep"
+"7001","7001_20130204_0004_t2_spc_1mm_p2_1NEX_9",0,1,"terrible, but seems fixable",0.5,FALSE
+"7002","7002_20130304_0002_t2_spc_1mm_p2_1NEX_9_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"CSF is a little off towards posterior part of ventricle (might make wm slightly smaller)",4,TRUE
+"7003","7003_20130301_0002_t2_spc_1mm_p2_1NEX_9_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"Failure of scan -> not fixable",0,FALSE
+"7003","7003_20130301_0003_t2_spc_1mm_p2_1NEX_9_tr_te_slice_increase_non_sel_to_slab_sel",5,4,"Some minor overshoot of gm onto wm, but otherwise perfect",4.5,TRUE
+"7004","7004_20130226_0002_t2_spc_1mm_p2_1NEX_9_tr_te_slice_increase_non_sel_to_slab_sel",1,0,"gm/wm failure, scan itself isn't terrible",0.5,FALSE
+"7004","7004_20130226_0003_t2_spc_1mm_p2_1NEX_8_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"good, some wm mislabeled as csf or gm",4,TRUE
+"7004","7004_20130226_0004_t2_spc_1mm_p2_1NEX_9_tr_te_slice_increase_non_sel_to_slab_sel",3,4,"CSF is a little off (extends into wm)",3.5,TRUE
+"7004","7004_20130226_0005_t2_spc_1mm_p2_1NEX_8_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"CSF extends into wm, some gm that should be wm, some skull on left?",4,TRUE
+"7004","7004_20140117_0020_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"failure",0,FALSE
+"7005","7005_20130318_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"not bad, mostly a poor quality scan, wm extends into csf",3,TRUE
+"7006","7006_20130424_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"wm extends into vetricular csf, also csf in dorsal part of brain has a lot of csf mislabeled as wm",3,TRUE
+"7008","7008_20130307_0002_t2_spc_1mm_p2_1NEX_8_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"little wm/gm mixup, very minor, some wm/csf dorsal btwn hemispheres",4,TRUE
+"7008","7008_20130307_0010_t2_spc_09mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"some csf in wm",4,TRUE
+"7009","7009_20130308_0004_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"wm in vetricular csf",3,TRUE
+"7010","7010_20130326_0003_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"looks like part was cut off (missing outer gm), labeling good though",4,TRUE
+"7011","7011_20130322_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",5,4,"couldn't find any big errors",4.5,TRUE
+"7011","7011_20130322_0019_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,4,"scan quality is poor, but segmentation is ok, some outer mixup",3.5,TRUE
+"7012","7012_20130402_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",5,4,"some wm in csf right lateral ventricle",4.5,TRUE
+"7012","7012_20130402_0018_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"failure",0,FALSE
+"7013","7013_20130408_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"failure",0,FALSE
+"7013","7013_20130408_0009_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"poor quality but good seg, minor wm in csf",4,TRUE
+"7014","7014_20130409_0004_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"poor quality but not terrinle",3,TRUE
+"7016","7016_20130430_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"wm in ventricles, everything else is good",3,TRUE
+"7016","7016_20140501_0018_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"this is a 1yo",0,FALSE
+"7017","7017_20130418_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"a lot of wm in csf",3,TRUE
+"7019","7019_20130508_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"good, some wm in csf",4,TRUE
+"7019","7019_20140326_0018_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"terrible",0,FALSE
+"7020","7020_20130506_0004_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"looks good, minor wm in csf",4,TRUE
+"7020","7020_20140424_0018_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"failure of scan",0,FALSE
+"7021","7021_20130513_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",5,5,"great",5,TRUE
+"7023","7023_20130529_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,2,"pretty bad, a lot of wm in csf and wm/gm mixup",2.5,TRUE
+"7023","7023_20140417_0018_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"failure",0,FALSE
+"7024","7024_20130612_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"wm in csf",3,TRUE
+"7024","7024_20140507_0018_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"failure",0,FALSE
+"7026","7026_20130606_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,3,"wm in ventricular csf",3.5,TRUE
+"7026","7026_20140502_0018_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"this is a 1yo",0,FALSE
+"7027","7027_20130613_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"looks good",4,TRUE
+"7028","7028_20130618_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,3,"wm/csf mixup",3.5,TRUE
+"7029","7029_20130605_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,3,"ventricles labeled as wm rather than csf",3.5,TRUE
+"7030","7030_20130614_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"csf labeled as wm",3,TRUE
+"7031","7031_20130611_0003_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",1,1,"poor quality - wm/gm distinctions + wm in csf",1,FALSE
+"7032","7032_20130722_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"poor scan quality, not bad though, minor csf/wm/gm",3,TRUE
+"7032","7032_20140611_0019_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",0,0,"1yo",0,FALSE
+"7033","7033_20130729_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",1,1,"poor quality, too much wm labeled as gm",1,FALSE
+"7033","7033_20130729_0018_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,2,"poor quality, better segmentation than previous though",2.5,TRUE
+"7034","7034_20130722_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,3,"fairly good, wm in csf",3.5,TRUE
+"7035","7035_20130724_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",5,5,"good, minor csf/wm",5,TRUE
+"7036","7036_20130830_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",5,5,"good, minor csf/wm",5,TRUE
+"7037","7037_20130821_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"good",4,TRUE
+"7038","7038_20130904_0009_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"good, minor csf/wm",4,TRUE
+"7040","7040_20130903_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"good",4,TRUE
+"7041","7041_20130917_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"ventricles completely mislabeled as wm instead of csf, some mixups dorsal as well",3,TRUE
+"7042","7042_20130918_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"good, minor csf/wm",4,TRUE
+"7043","7043_20131104_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",5,5,"looks good",5,TRUE
+"7044","7044_20131121_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"ventricles completely mislabeled as wm instead of csf",3,TRUE
+"7045","7045_20131119_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",2,2,"poor quality scan, csf/wm/gm mixups",2,TRUE
+"7045","7045_20131119_0010_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",2,2,"poor scan w motion, csf/wm mixup",2,TRUE
+"7045","7045_20131119_0019_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,2,"poor, could be best of the bad for 7045 if fix csf/wm in ventricles",2.5,TRUE
+"7046","7046_20131120_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",5,5,"looks good",5,TRUE
+"7048","7048_20131202_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"very minor wm in csf",4,TRUE
+"7049","7049_20131205_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",4,4,"some wm in ventricle csf",4,TRUE
+"7050","7050_20131213_0002_t2_spc_08mm_p2_2NEX_tr_te_slice_increase_non_sel_to_slab_sel",3,3,"outer mislabeling and ventricles mislabeled as csf",3,TRUE

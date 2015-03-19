@@ -122,6 +122,45 @@ if ( TRUE )
     predmat<-antsrimpute(data.matrix(subdemog[,c(12)]))
     predmat<-antsrimpute(data.matrix(subdemog[,c(10,11,12)]))
     poorOrNot<-factor( predmat[,3]  < 1 )
+    tryMerfNerf <- TRUE
+    if ( tryMerfNerf )
+    {
+      selector<-createDataPartition( poorOrNot, p=0.5 )$Resample1
+      sublist<-imageFileNames2ImageList( babylist[selector] )
+      sublistes<-imageFileNames2ImageList( babylist[-selector] )
+      trnlist<-list()
+      for ( i in 1:length(sublist) ) trnlist[[i]]<-list(  sublist[[i]] )
+      predval<-as.numeric( poorOrNot )
+      predval<-psych::winsor( antsrimpute(subdemog$ITNEnrollment), 0.05 )
+      temp<-abs( cor(  mat[selector,] ,  predval[selector] ) )
+      statfamask<-makeImage( famask, temp ) %>% smoothImage(1)
+      plot(famask, statfamask, window.overlay=c(0.2,1) )
+      statfamask<-thresholdImage( statfamask , 0.2, Inf )
+      statfamaskdil<-iMath( statfamask, "MD", 5 )
+      cmask<-cropImage( statfamask, statfamaskdil )
+      rad<-rep(1,3);  mr<-c(4,2,1)
+      crfm<-mrvnrfs( predval[selector], trnlist,
+                    cmask,  rad=rad,
+                    nsamples = 100,  asFactors=F,
+                    ntrees=1000, multiResSchedule=mr )
+      teslist<-list()
+      for ( i in 1:length(sublistes) )
+        teslist[[i]]<-list( sublistes[[i]] )
+      cres<-mrvnrfs.predict( crfm$rflist, teslist ,
+        cmask, rad=rad, multiResSchedule=mr, asFactors=F )
+      predmat<-imageListToMatrix( unlist(cres$probs) , cmask )
+      corrmat<-antsrimpute( cor( predmat , predval[-selector] ) )
+      corimg<-makeImage( cmask, corrmat )
+      corimg<-decropImage( corimg, famask )
+      plot( famask, corimg, window.overlay=c( max(corimg)*0.5, max(corimg) ) )
+      locquan<-function(x){  quantile(x,c(0.75)) }
+      rfpred <- apply( predmat, FUN=median, MARGIN=1 )
+      print( cor.test( predval[-selector], rfpred ) )
+      plot(  predval[-selector], rfpred  )
+      print( summary( lm( predval[-selector] ~  rfpred + . ,
+        data = subdemog[-selector,confinds]  ) ) )
+    stop("doingy-doingy!")
+    }
     predmat[,3]<-rank(predmat[,3] )
     mat2<-antsrimpute(data.matrix(subdemog[,c(10,12,confinds)]))
     set.seed(9)

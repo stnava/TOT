@@ -66,10 +66,10 @@ for ( i in ids[!is.na(ids)] )
     }
   }
 write.csv(demogreo,ofn,row.names=F)
-print(
-summary(lm(  AnatomicalQualityMeasure ~ MomEd + ITNEnrollment,
-  data=demogreo, subset=demogreo$AnatomicalQualityMeasure>=2))
-)
+#print(
+#summary(lm(  AnatomicalQualityMeasure ~ MomEd + ITNEnrollment,
+#  data=demogreo, subset=demogreo$AnatomicalQualityMeasure>=2))
+#)
 
 baddt<-c("7006_20140430_DTIfa.nii.gz","7038_20130904_DTIfa.nii.gz","7041_20140826_DTIfa.nii.gz","","","")
 demogreo$DTQualityMeasure[ !is.na(demogreo$DTFileExtension) ]<-1
@@ -82,24 +82,40 @@ if ( TRUE )
   library(ANTsR)
   setwd("/Users/stnava/data/TOT/tempdti")
   wfn<-na.omit(demogreo$DTFileExtension[ demogreo$DTQualityMeasure == 1])
-  ref<-antsImageRead("fa_avg.nii.gz",3)
-  refm<-antsImageRead("fa_ref_mask.nii.gz",3)
+  ref<-antsImageRead("fa_avg.nii.gz")
+  ref<-antsImageRead("fa_avg_raw.nii.gz")
+  refm<-antsImageRead("fa_ref_mask.nii.gz")
   for ( k in 1:length(wfn) )
     {
     fafn<-Sys.glob(paste("../data/dti_recon/*/*/*/",wfn[k],sep=''))
+    subid<-unlist( strsplit( fafn[1] , "/" ))
+    subid<-paste(subid[4],subid[5],sep="_")
+    srch<-paste("../segmentationsMar25_2015/processing3/*/",
+      subid,"*rain.nii.gz",sep='')
+    t2fn<-Sys.glob(srch)
     onm<-paste("w",wfn[k],sep='')
-    if ( ! file.exists(onm) )
+    onmm<-paste("m",wfn[k],sep='')
+    print(fafn)
+    print(t2fn)
+    if ( length(t2fn) > 0 & FALSE ) # &  ! file.exists(onmm) )
       {
+      t2<-antsImageRead( t2fn[1] )
       fa<-antsImageRead(fafn,3)
-      fam<-getMask(fa,0.02,0.8*mean(fa),2);
-      ImageMath(3,fam,'MD',fam,1)
-      ImageMath(3,fam,'ME',fam,1)
-      ImageMath(3,fam,'FillHoles',fam)
+      fam<-getMask(fa,0.025,0.8*mean(fa),3);
+      fam<-iMath(fam,'MD',1)
+      fam<-iMath(fam,'ME',1)
+      fam<-iMath(fam,'FillHoles')
     #  fa[fam==0]<-0
       mytx<-antsRegistration(fixed=ref , moving=fa ,
-             typeofTransform = c("SyN"),
-             outprefix=tempfile(),mask=refm)
-      antsImageWrite( mytx$warpedmovout , onm  )
+             typeofTransform = c("SyN") )
+#      antsImageWrite( mytx$warpedmovout , onm  )
+      fam <- antsApplyTransforms( fixed=fa, moving=refm,
+       transformlist=mytx$invtransforms, interpolator="NearestNeighbor" )
+      fam2 <- fa * iMath( fam, "ME", 1 )
+      mytx<-antsRegistration( fixed=t2, moving=fam2,
+             typeofTransform = "SyNCC") # ,mask=refm)
+      antsImageWrite( mytx$warpedmovout , onmm  )
+      print( onmm )
       }
     }
     if ( FALSE ) {
@@ -117,10 +133,12 @@ if ( TRUE )
     mat<-imagesToMatrix( babylist , famask )
     subdemog<-demogreo[sel,]
     confinds<-c(5,7,8,38)
+#    confinds<-c(5,7,38)
     confoundmat<-antsrimpute(data.matrix(subdemog[,confinds]))
     rmat<-residuals(lm(mat~confoundmat))
     predmat<-antsrimpute(data.matrix(subdemog[,c(12)]))
     predmat<-antsrimpute(data.matrix(subdemog[,c(10,11,12)]))
+    subdemog$AdmHC_cr<-antsrimpute( subdemog$AdmHC_cr )
     poorOrNot<-factor( predmat[,3]  < 1 )
     tryMerfNerf <- TRUE
     if ( tryMerfNerf )
@@ -133,16 +151,41 @@ if ( TRUE )
       predval<-as.numeric( poorOrNot )
       predval<-psych::winsor( antsrimpute(subdemog$ITNEnrollment), 0.05 )
       temp<-abs( cor(  mat[selector,] ,  predval[selector] ) )
-      statfamask<-makeImage( famask, temp ) %>% smoothImage(1)
-      plot(famask, statfamask, window.overlay=c(0.2,1) )
-      statfamask<-thresholdImage( statfamask , 0.2, Inf )
-      statfamaskdil<-iMath( statfamask, "MD", 5 )
+      tmdl<-lm( mat[selector,] ~ predval[selector] + . ,
+        data=subdemog[selector,confinds] )
+      tmdl<-bigLMStats( tmdl )
+      temp<-abs( tmdl$beta.t[1,] )
+      statfamask<-makeImage( famask, temp ) %>% smoothImage(2)
+      statfamask<-thresholdImage( statfamask , 0.1, Inf )
+      rmat<-data.matrix( residuals( lm( mat[selector,] ~ 0 + . ,
+        data=subdemog[ selector, confinds ] ) ) )
+      eanat<-sparseDecom( rmat, famask, nvecs=2, its=2,
+        sparseness=0.1, cthresh=50  )
+      statfamask<-eigSeg(  famask, eanat$eig  ) %>% thresholdImage(1,Inf)
+#      plot( famask, statfamask, window.overlay=c( mean(temp), max(temp) ) )
+      statfamaskdil<-iMath( statfamask, "GD", 8 )
       cmask<-cropImage( statfamask, statfamaskdil )
-      rad<-rep(1,3);  mr<-c(4,2,1)
+      rad<-rep( 1, 3 );  mr<-c( 2, 1 )
+      inds2<-1:round(length(selector)*0.75)
+      crfm<-mrvnrfs( predval[selector][inds2], trnlist[inds2],
+                    cmask,  rad=rad,
+                    nsamples = 200,  asFactors=F,
+                    ntrees = 1000 , multiResSchedule=mr )
+
+      # now get best voxels from the training data
+      crestrain<-mrvnrfs.predict( crfm$rflist, trnlist[-inds2] ,
+        cmask, rad=rad, multiResSchedule=mr, asFactors=F )
+      predmat<-imageListToMatrix( unlist(crestrain$probs) , cmask )
+      etr<-apply( abs(predmat - predval[selector][-inds2]),
+        FUN=mean, MARGIN=2 )
+
+      # retrain on all data
       crfm<-mrvnrfs( predval[selector], trnlist,
                     cmask,  rad=rad,
                     nsamples = 100,  asFactors=F,
-                    ntrees=1000, multiResSchedule=mr )
+                    ntrees = 1000 , multiResSchedule=mr )
+
+      # now apply to test data and make images
       teslist<-list()
       for ( i in 1:length(sublistes) )
         teslist[[i]]<-list( sublistes[[i]] )
@@ -152,19 +195,20 @@ if ( TRUE )
       corrmat<-antsrimpute( cor( predmat , predval[-selector] ) )
       corimg<-makeImage( cmask, corrmat )
       corimg<-decropImage( corimg, famask )
-      plot( famask, corimg, window.overlay=c( max(corimg)*0.5, max(corimg) ) )
-      locquan<-function(x){  quantile(x,c(0.75)) }
-      rfpred <- apply( predmat, FUN=median, MARGIN=1 )
+      plot( famask, corimg, window.overlay=c( 0.33, max(corimg) ) )
+      besttr <- head( order(etr) , round( 0.5 * ncol(predmat) ) )
+      rfpred <- apply( predmat[ , besttr ], FUN=mean, MARGIN=1 )
       print( cor.test( predval[-selector], rfpred ) )
-      plot(  predval[-selector], rfpred  )
+#      plot(  predval[-selector], rfpred  )
       print( summary( lm( predval[-selector] ~  rfpred + . ,
         data = subdemog[-selector,confinds]  ) ) )
+    setwd("/Users/stnava/data/TOT")
     stop("doingy-doingy!")
     }
     predmat[,3]<-rank(predmat[,3] )
     mat2<-antsrimpute(data.matrix(subdemog[,c(10,12,confinds)]))
     set.seed(9)
-    selector<-createDataPartition( poorOrNot )$Resample1
+    selector<-createDataPartition( poorOrNot, p=0.5 )$Resample1
     if ( FALSE )
     {
     matlist<-list(data.matrix( rmat[selector,]),

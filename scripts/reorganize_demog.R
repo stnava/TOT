@@ -182,7 +182,7 @@ if ( TRUE )
       # retrain on all data
       crfm<-mrvnrfs( predval[selector], trnlist,
                     cmask,  rad=rad,
-                    nsamples = 100,  asFactors=F,
+                    nsamples = 200,  asFactors=F,
                     ntrees = 1000 , multiResSchedule=mr )
 
       # now apply to test data and make images

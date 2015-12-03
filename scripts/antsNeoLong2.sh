@@ -1,16 +1,16 @@
 #  registration
 rootdir=$PWD
-templatedir=${rootdir}/template_BA/
-templatepriors=${templatedir}Priors/priors
+templatedir=${rootdir}/template_TOT0004/
+templatepriors=${templatedir}Priors/priorsj
 template=${templatedir}template_JLF.nii.gz
 templatebmask=${templatedir}template_JLF_brain_mask.nii.gz
+##############
 subjectimage=$1
 outdir=$2
 dti=$3
-fa=$4
 malfdir=${rootdir}/malf/
 if [[ ! -s $malfdir ]] ; then echo no malfdir ; fi
-atits=50
+atits=150
 if [[ ! -s $template ]] ; then
   echo template $template does not exist. exiting.
   exit 1
@@ -31,12 +31,12 @@ if [[ ! -s $outdir ]] ; then
   mkdir -p $outdir
 fi
 if [[ ! -s ${nm}1InverseWarp.nii.gz ]] ; then
-  antsRegistrationSyN.sh -f $template -m $subjectimage -j 1 -o ${nm}
+  antsRegistrationSyN.sh -f $template -m $subjectimage -j 0 -o ${nm}
 fi
 if [[ ! -s ${nm}jacobian.nii.gz ]] ; then
   CreateJacobianDeterminantImage 3 ${nm}1Warp.nii.gz ${nm}jacobian.nii.gz 0 1
 fi
-for  x in 1 2 3 4 5 6 7 ; do # csf gm wm dgm bstem cerebellum ventricles
+for  x in 1 2 3 4 5 6  ; do # csf gm wm dgm bstem cerebellum ventricles
   antsApplyTransforms -d 3 -i ${templatepriors}${x}.nii.gz -o ${nm}_priors${x}.nii.gz $invmap
 done
 # initial brain mask --- doesnt have to be perfect
@@ -98,15 +98,29 @@ else
 fi
 
 # map jlf segmentation to probabilities
-ThresholdImage 3 ${nm}_fusionLabels.nii.gz  ${nm}_priors4.nii.gz  40 47
+## ThresholdImage 3 ${nm}_fusionLabels.nii.gz  ${nm}_priors4.nii.gz  40 47
 ThresholdImage 3 ${nm}_fusionLabels.nii.gz  ${nm}_priors6.nii.gz  17 18
-ThresholdImage 3 ${nm}_fusionLabels.nii.gz  ${nm}_priors7.nii.gz  49 50
-for x in 4 6 7 ; do
+## ThresholdImage 3 ${nm}_fusionLabels.nii.gz  ${nm}_priors7.nii.gz  49 50
+for x in  3 4 5 6 ; do
   SmoothImage 3 ${nm}_priors${x}.nii.gz 0.5 ${nm}_priors${x}.nii.gz
+  ImageMath 3 ${nm}_priors${x}.nii.gz Normalize ${nm}_priors${x}.nii.gz
 done
-antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_segmask.nii.gz -c 7 \
+mod2=" -a ${nm}_laplacian.nii.gz "
+if [[ ${#dti} -gt 4 ]] ; then
+  mod2=" $mod2 -a $dti "
+fi
+antsAtroposN4.sh -d 3 -u 0 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 \
   -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         \
-  -r "[0.1,1x1x1]" -a ${nm}_norm.nii.gz   -a ${nm}_laplacian.nii.gz
+  -r "[0.0,1x1x1]" -a ${nm}_norm.nii.gz $mod2
+####
+exit ## temporary
+###
+#  ThresholdImage 3 ${nm}_fusionLabels.nii.gz  ${nm}_ventmask.nii.gz  49 50
+#  ImageMath 3 ${nm}_negventmask.nii.gz Neg ${nm}_ventmask.nii.gz
+#  MultiplyImages 3 ${nm}_brainmask.nii.gz   ${nm}_negventmask.nii.gz  ${nm}_segmask.nii.gz
+##  if [[ ! -s ${nm}LapSegmentation.nii.gz ]] ; then
+#    antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_segmask.nii.gz -c 6 -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         -r "[0.1,1x1x1]" -a ${nm}_norm.nii.gz   -a ${nm}_laplacian.nii.gz
+#  ImageMath 3  ${nm}LapSegmentation.nii.gz + ${nm}LapSegmentation.nii.gz ${nm}_ventmask.nii.gz
 
 # use geometry to infer sulcal locations
 if [[ -s ${nm}LapSegmentation.nii.gz ]] ; then
@@ -114,7 +128,7 @@ if [[ -s ${nm}LapSegmentation.nii.gz ]] ; then
   antsApplyTransforms -d 3 -i ${nm}thicknessjj.nii.gz -o ${nm}_CortVolToTemplate.nii.gz $fwdmap
 fi
 if [[ -s ${nm}thicknessjj.nii.gz  ]] ; then
-for  x in 1 2 3 5 ; do # exclude the JLF probabilities
+for  x in 1 2 3 4 5 ; do # exclude the JLF probabilities
   antsApplyTransforms -d 3 -i ${templatepriors}${x}.nii.gz -o ${nm}_priors${x}.nii.gz $invmap
 done
 MultiplyImages 3 ${nm}wm.nii.gz ${nm}_priors3.nii.gz  ${nm}_priors3.nii.gz
@@ -128,9 +142,9 @@ ImageMath 3  ${nm}thicknessjj_neg.nii.gz  Neg  ${nm}thicknessjjsig.nii.gz
 MultiplyImages 3 ${nm}thicknessjj_neg.nii.gz  ${nm}_priors1.nii.gz ${nm}_priors1.nii.gz
 ImageMath 3 ${nm}_priors1.nii.gz + ${nm}thicknessjjcsf.nii.gz ${nm}_priors1.nii.gz
 MultiplyImages 3 ${nm}thicknessjj_neg.nii.gz  ${nm}_priors3.nii.gz ${nm}_priors3.nii.gz
-antsAtroposN4.sh -d 3 -m 1 -n $atits -x ${nm}_segmask.nii.gz -c 7 \
+antsAtroposN4.sh -d 3 -u 0 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 \
   -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}DIFF \
-  -r "[0.1,1x1x1]" -a ${nm}_norm.nii.gz
+  -r "[0.05,1x1x1]" -a ${nm}_norm.nii.gz
 fi
 
 

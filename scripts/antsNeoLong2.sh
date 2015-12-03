@@ -112,9 +112,6 @@ fi
 antsAtroposN4.sh -d 3 -u 0 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 \
   -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}Lap         \
   -r "[0.0,1x1x1]" -a ${nm}_norm.nii.gz $mod2
-####
-exit ## temporary
-###
 #  ThresholdImage 3 ${nm}_fusionLabels.nii.gz  ${nm}_ventmask.nii.gz  49 50
 #  ImageMath 3 ${nm}_negventmask.nii.gz Neg ${nm}_ventmask.nii.gz
 #  MultiplyImages 3 ${nm}_brainmask.nii.gz   ${nm}_negventmask.nii.gz  ${nm}_segmask.nii.gz
@@ -142,9 +139,9 @@ ImageMath 3  ${nm}thicknessjj_neg.nii.gz  Neg  ${nm}thicknessjjsig.nii.gz
 MultiplyImages 3 ${nm}thicknessjj_neg.nii.gz  ${nm}_priors1.nii.gz ${nm}_priors1.nii.gz
 ImageMath 3 ${nm}_priors1.nii.gz + ${nm}thicknessjjcsf.nii.gz ${nm}_priors1.nii.gz
 MultiplyImages 3 ${nm}thicknessjj_neg.nii.gz  ${nm}_priors3.nii.gz ${nm}_priors3.nii.gz
-antsAtroposN4.sh -d 3 -u 0 -m 1 -n $atits -x ${nm}_brainmask.nii.gz -c 6 \
+antsAtroposN4.sh -d 3 -u 0 -m 2 -n $atits -x ${nm}_brainmask.nii.gz -c 6 \
   -p ${nm}_priors%d.nii.gz -w 0.25 -o ${nm}DIFF \
-  -r "[0.05,1x1x1]" -a ${nm}_norm.nii.gz
+  -r "[0.0,1x1x1]" -a ${nm}_norm.nii.gz
 fi
 
 
